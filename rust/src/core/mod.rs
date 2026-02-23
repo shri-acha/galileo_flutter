@@ -34,6 +34,7 @@ lazy_static::lazy_static! {
     );
     pub static ref SESSION_COUNTER: AtomicU32 = AtomicU32::new(0);
     pub static ref SESSIONS: Mutex<HashMap<SessionID, Arc<MapSession>>> = Mutex::new(HashMap::new());
+    pub static ref TILE_CACHE_PATH: parking_lot::RwLock<Option<String>> = parking_lot::RwLock::new(None);
 }
 
 pub(crate) fn init_logger() {

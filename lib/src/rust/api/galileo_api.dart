@@ -7,55 +7,58 @@ import '../frb_generated.dart';
 import 'dart_types.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `create_url_source`
+// These functions are ignored because they are not marked as `pub`: `create_url_source`, `initialize_font_service`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`
 
 /// Initialize the Galileo Flutter plugin with FFI pointer for irondash
 Future<void> galileoFlutterInit({required PlatformInt64 ffiPtr}) =>
-    RustLib.instance.api.crateApiApiGalileoFlutterInit(ffiPtr: ffiPtr);
+    RustLib.instance.api.crateApiGalileoApiGalileoFlutterInit(ffiPtr: ffiPtr);
+
+Future<void> setTileCachePath({String? path}) =>
+    RustLib.instance.api.crateApiGalileoApiSetTileCachePath(path: path);
 
 Future<CreateNewSessionResponse> createNewMapSession({
   required PlatformInt64 engineHandle,
   required MapInitConfig config,
-}) => RustLib.instance.api.crateApiApiCreateNewMapSession(
+}) => RustLib.instance.api.crateApiGalileoApiCreateNewMapSession(
   engineHandle: engineHandle,
   config: config,
 );
 
 /// Triggers a map update and re-render.
-Future<void> requestMapRedraw({required int sessionId}) =>
-    RustLib.instance.api.crateApiApiRequestMapRedraw(sessionId: sessionId);
+Future<void> requestMapRedraw({required int sessionId}) => RustLib.instance.api
+    .crateApiGalileoApiRequestMapRedraw(sessionId: sessionId);
 
 /// Marks the session as alive (called periodically from Flutter)
-Future<void> markSessionAlive({required int sessionId}) =>
-    RustLib.instance.api.crateApiApiMarkSessionAlive(sessionId: sessionId);
+Future<void> markSessionAlive({required int sessionId}) => RustLib.instance.api
+    .crateApiGalileoApiMarkSessionAlive(sessionId: sessionId);
 
 /// Destroys all streams for a given engine
 Future<void> destroyAllEngineSessions({required PlatformInt64 engineId}) =>
-    RustLib.instance.api.crateApiApiDestroyAllEngineSessions(
+    RustLib.instance.api.crateApiGalileoApiDestroyAllEngineSessions(
       engineId: engineId,
     );
 
 /// Destroys a specific session
 Future<void> destroySession({required int sessionId}) =>
-    RustLib.instance.api.crateApiApiDestroySession(sessionId: sessionId);
+    RustLib.instance.api.crateApiGalileoApiDestroySession(sessionId: sessionId);
 
 /// Adds a layer to a session
 Future<void> addSessionLayer({
   required int sessionId,
   required LayerConfig layerConfig,
-}) => RustLib.instance.api.crateApiApiAddSessionLayer(
+}) => RustLib.instance.api.crateApiGalileoApiAddSessionLayer(
   sessionId: sessionId,
   layerConfig: layerConfig,
 );
 
 Future<MapViewport?> getMapViewport({required int sessionId}) =>
-    RustLib.instance.api.crateApiApiGetMapViewport(sessionId: sessionId);
+    RustLib.instance.api.crateApiGalileoApiGetMapViewport(sessionId: sessionId);
 
 Future<void> handleEventForSession({
   required int sessionId,
   required UserEvent event,
-}) => RustLib.instance.api.crateApiApiHandleEventForSession(
+}) => RustLib.instance.api.crateApiGalileoApiHandleEventForSession(
   sessionId: sessionId,
   event: event,
 );
@@ -63,7 +66,7 @@ Future<void> handleEventForSession({
 Future<void> resizeSession({
   required int sessionId,
   required MapSize newSize,
-}) => RustLib.instance.api.crateApiApiResizeSession(
+}) => RustLib.instance.api.crateApiGalileoApiResizeSession(
   sessionId: sessionId,
   newSize: newSize,
 );

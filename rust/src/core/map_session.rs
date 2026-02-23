@@ -1,7 +1,6 @@
 use crate::core::galileo_ref::create_galileo_map_v2;
 pub use crate::core::pixel_buffer::PixelBuffer;
 use crate::core::{WindowlessRenderer, SESSIONS, SESSION_COUNTER, TOKIO_RUNTIME};
-use crate::utils::invoke_on_platform_main_thread;
 use anyhow::anyhow;
 use galileo::{galileo_types, DummyMessenger};
 use log::{debug, error, info};
@@ -19,7 +18,7 @@ use crate::core::flutter::pixel_texture::{
 
 pub type SessionID = u32;
 
-struct FlutterCtx {
+pub struct FlutterCtx {
     payload_holder: SharedPixelPayloadHolder,
     sendable_texture: SharedSendablePixelTexture,
     pub texture_id: i64,
@@ -72,7 +71,8 @@ impl galileo::Messenger for SessionMessenger {
         if let Some(runtime) = TOKIO_RUNTIME.get() {
             let _ = runtime.spawn(async move {
                 loop {
-                    tokio::time::sleep(Duration::from_millis(16)).await; // throttle to ~60fps
+                    const FRAME_THROTTLE_MS: u64 = 16;
+                    tokio::time::sleep(Duration::from_millis(FRAME_THROTTLE_MS)).await; // throttle to ~60fps
                     if !session.requires_redraw.swap(false, Ordering::Relaxed) {
                         session.redraw_scheduled.store(false, Ordering::Release);
                         break;
@@ -259,11 +259,13 @@ impl MapSession {
     }
 
     async fn _draw_no_res(&self) {
-        self.redraw().await.inspect_err(|err| error!("{err}"));
+        let _ = self.redraw().await.inspect_err(|err| error!("{err}"));
     }
 
-    pub async fn terminate(self: Arc<Self>) {
+    pub async fn terminate(self: Arc<Self>) -> Option<FlutterCtx> {
         self.is_alive.store(false, Ordering::SeqCst);
+
+        let flctx = self.flutter_ctx.write().take();
 
         // clear all layers
         {
@@ -274,21 +276,14 @@ impl MapSession {
             map.set_messenger(None::<DummyMessenger>);
             map.layers_mut().clear();
         }
-
-        tokio::time::sleep(Duration::from_millis(500)).await;
-
-        let flctx = self.flutter_ctx.write().take();
-        if let Some(ctx) = flctx {
-            let _ = Arc::strong_count(&ctx.payload_holder);
-            let _ = Arc::strong_count(&ctx.sendable_texture);
-
-            invoke_on_platform_main_thread(move || {
-                drop(ctx);
-            });
-        }
+        flctx
     }
 }
 /// Updates the session counter and returns a new session ID
 fn create_new_session() -> SessionID {
+    debug!(
+        "Session created: {}",
+        SESSION_COUNTER.load(Ordering::Relaxed)
+    );
     SESSION_COUNTER.fetch_add(1, Ordering::SeqCst) + 1
 }

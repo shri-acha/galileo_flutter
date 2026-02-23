@@ -1,7 +1,4 @@
-use galileo::{
-    layer::Layer,
-    Map, MapBuilder,
-};
+use galileo::{layer::Layer, Map, MapBuilder};
 
 use crate::api::dart_types::MapInitConfig;
 

@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 
 // load from env
-const MAP_TILER_API_KEY = 'PZ3FHCeFcKn9AF7iL6SO';
+const MAP_TILER_API_KEY = '';
 const MAP_TILER_URL_TEMPLATE =
     'https://api.maptiler.com/tiles/v3-openmaptiles/{z}/{x}/{y}.pbf?key=$MAP_TILER_API_KEY';
 
@@ -162,71 +162,59 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
-              child:
-                  _layerConfig == null
-                      ? const Center(child: CircularProgressIndicator())
-                      : GalileoMapWidget.fromConfig(
-                        size: const MapSize(width: 800, height: 600),
-                        layers: [_layerConfig!],
-                        config: MapInitConfig(
-                          backgroundColor: (0.1, 0.1, 0, 0.5),
-                          enableMultisampling: true,
-                          latlon: (0.0, 0.0),
-                          mapSize: MapSize(width: 800, height: 600),
-                          zoomLevel: 10,
+              child: GalileoMapWidget.fromConfig(
+                size: const MapSize(width: 800, height: 600),
+                layers: [_layerConfig],
+                config: MapInitConfig(
+                  backgroundColor: (0.1, 0.1, 0, 0.5),
+                  enableMultisampling: true,
+                  latlon: (0.0, 0.0),
+                  mapSize: MapSize(width: 800, height: 600),
+                  zoomLevel: 10,
+                ),
+                enableKeyboard: true,
+                onTap: _onMapTap,
+                onViewportChanged: _onViewportChanged,
+                child: Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
-                        enableKeyboard: true,
-                        onTap: _onMapTap,
-                        onViewportChanged: _onViewportChanged,
-                        child: Positioned(
-                          top: 10,
-                          right: 10,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Map Controls:',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '• Drag to pan',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                                Text(
-                                  '• Pinch to zoom',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                                Text(
-                                  '• Arrow keys to pan',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                                Text(
-                                  '• +/- to zoom',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                              ],
-                            ),
+                      ],
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Map Controls:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
+                        SizedBox(height: 4),
+                        Text('• Drag to pan', style: TextStyle(fontSize: 10)),
+                        Text('• Pinch to zoom', style: TextStyle(fontSize: 10)),
+                        Text(
+                          '• Arrow keys to pan',
+                          style: TextStyle(fontSize: 10),
+                        ),
+                        Text('• +/- to zoom', style: TextStyle(fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           // Control panel
