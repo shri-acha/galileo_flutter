@@ -682,9 +682,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         return LayerConfig_PolygonLayer(
           features: dco_decode_list_polygon(raw[1]),
         );
+      case 4:
+        return LayerConfig_PointLayer(features: dco_decode_list_point(raw[1]));
       default:
         throw Exception("unreachable");
     }
+  }
+
+  @protected
+  List<Point> dco_decode_list_point(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_point).toList();
   }
 
   @protected
@@ -796,12 +804,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Point dco_decode_point(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return Point(
+      coordinate: dco_decode_record_f_64_f_64(arr[0]),
+      style: dco_decode_point_style(arr[1]),
+    );
+  }
+
+  @protected
   Point2 dco_decode_point_2(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
     if (arr.length != 2)
       throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
     return Point2(x: dco_decode_f_64(arr[0]), y: dco_decode_f_64(arr[1]));
+  }
+
+  @protected
+  PointStyle dco_decode_point_style(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
+    return PointStyle(fillColor: dco_decode_color(arr[0]));
   }
 
   @protected
@@ -1091,9 +1120,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       case 3:
         var var_features = sse_decode_list_polygon(deserializer);
         return LayerConfig_PolygonLayer(features: var_features);
+      case 4:
+        var var_features = sse_decode_list_point(deserializer);
+        return LayerConfig_PointLayer(features: var_features);
       default:
         throw UnimplementedError('');
     }
+  }
+
+  @protected
+  List<Point> sse_decode_list_point(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <Point>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_point(deserializer));
+    }
+    return ans_;
   }
 
   @protected
@@ -1236,11 +1280,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Point sse_decode_point(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_coordinate = sse_decode_record_f_64_f_64(deserializer);
+    var var_style = sse_decode_point_style(deserializer);
+    return Point(coordinate: var_coordinate, style: var_style);
+  }
+
+  @protected
   Point2 sse_decode_point_2(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_x = sse_decode_f_64(deserializer);
     var var_y = sse_decode_f_64(deserializer);
     return Point2(x: var_x, y: var_y);
+  }
+
+  @protected
+  PointStyle sse_decode_point_style(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_fillColor = sse_decode_color(deserializer);
+    return PointStyle(fillColor: var_fillColor);
   }
 
   @protected
@@ -1514,6 +1573,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       case LayerConfig_PolygonLayer(features: final features):
         sse_encode_i_32(3, serializer);
         sse_encode_list_polygon(features, serializer);
+      case LayerConfig_PointLayer(features: final features):
+        sse_encode_i_32(4, serializer);
+        sse_encode_list_point(features, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_point(List<Point> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_point(item, serializer);
     }
   }
 
@@ -1634,10 +1705,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_point(Point self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_record_f_64_f_64(self.coordinate, serializer);
+    sse_encode_point_style(self.style, serializer);
+  }
+
+  @protected
   void sse_encode_point_2(Point2 self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_f_64(self.x, serializer);
     sse_encode_f_64(self.y, serializer);
+  }
+
+  @protected
+  void sse_encode_point_style(PointStyle self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_color(self.fillColor, serializer);
   }
 
   @protected

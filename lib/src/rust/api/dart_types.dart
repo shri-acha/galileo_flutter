@@ -8,8 +8,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'dart_types.freezed.dart';
 
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `MapPosition`, `Point3`, `PolygonSymbol`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `MapPosition`, `Point3`, `PointSymbol`, `PolygonSymbol`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from_rect`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`
 
 /// 2D point in cartesian coordinate space.
@@ -60,9 +60,13 @@ sealed class LayerConfig with _$LayerConfig {
 
   /// Layer to render polygons
   const factory LayerConfig.polygonLayer({
-    /// Stores the features to be rendered
+    /// Stores the Polygon features to be rendered
     required List<Polygon> features,
   }) = LayerConfig_PolygonLayer;
+  const factory LayerConfig.pointLayer({
+    /// Stores the Point features to be rendered
+    required List<Point> features,
+  }) = LayerConfig_PointLayer;
 }
 
 class MapInitConfig {
@@ -235,6 +239,32 @@ class MouseEvent {
           buttons == other.buttons;
 }
 
+/// Points with properties for colors
+/// Usage:
+///   Point(
+///     coordinate: (27.7,85.3),
+///     style: PointStyle(
+///       Color: (0.2,0.5,0.9,0.8),
+///     ),
+///   )
+class Point {
+  final (double, double) coordinate;
+  final PointStyle style;
+
+  const Point({required this.coordinate, required this.style});
+
+  @override
+  int get hashCode => coordinate.hashCode ^ style.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Point &&
+          runtimeType == other.runtimeType &&
+          coordinate == other.coordinate &&
+          style == other.style;
+}
+
 /// 2D point in cartesian coordinate space.
 class Point2 {
   final double x;
@@ -252,6 +282,22 @@ class Point2 {
           runtimeType == other.runtimeType &&
           x == other.x &&
           y == other.y;
+}
+
+class PointStyle {
+  final Color fillColor;
+
+  const PointStyle({required this.fillColor});
+
+  @override
+  int get hashCode => fillColor.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PointStyle &&
+          runtimeType == other.runtimeType &&
+          fillColor == other.fillColor;
 }
 
 /// Closed geographic polygon with fill/stroke styling.

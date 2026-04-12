@@ -29,6 +29,7 @@ mixin _$LayerConfig {
     )
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
+    required TResult Function(List<Point> features) pointLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -41,6 +42,7 @@ mixin _$LayerConfig {
     )?
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
+    TResult? Function(List<Point> features)? pointLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -49,6 +51,7 @@ mixin _$LayerConfig {
     TResult Function(String urlTemplate, String styleJson, String? attribution)?
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
+    TResult Function(List<Point> features)? pointLayer,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -57,6 +60,7 @@ mixin _$LayerConfig {
     required TResult Function(LayerConfig_RasterTiles value) rasterTiles,
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
+    required TResult Function(LayerConfig_PointLayer value) pointLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -64,6 +68,7 @@ mixin _$LayerConfig {
     TResult? Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult? Function(LayerConfig_PointLayer value)? pointLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -71,6 +76,7 @@ mixin _$LayerConfig {
     TResult Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult Function(LayerConfig_PointLayer value)? pointLayer,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 }
@@ -150,6 +156,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     )
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
+    required TResult Function(List<Point> features) pointLayer,
   }) {
     return osm();
   }
@@ -166,6 +173,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     )?
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
+    TResult? Function(List<Point> features)? pointLayer,
   }) {
     return osm?.call();
   }
@@ -178,6 +186,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     TResult Function(String urlTemplate, String styleJson, String? attribution)?
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
+    TResult Function(List<Point> features)? pointLayer,
     required TResult orElse(),
   }) {
     if (osm != null) {
@@ -193,6 +202,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     required TResult Function(LayerConfig_RasterTiles value) rasterTiles,
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
+    required TResult Function(LayerConfig_PointLayer value) pointLayer,
   }) {
     return osm(this);
   }
@@ -204,6 +214,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     TResult? Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult? Function(LayerConfig_PointLayer value)? pointLayer,
   }) {
     return osm?.call(this);
   }
@@ -215,6 +226,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     TResult Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult Function(LayerConfig_PointLayer value)? pointLayer,
     required TResult orElse(),
   }) {
     if (osm != null) {
@@ -325,6 +337,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     )
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
+    required TResult Function(List<Point> features) pointLayer,
   }) {
     return rasterTiles(urlTemplate, attribution);
   }
@@ -341,6 +354,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     )?
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
+    TResult? Function(List<Point> features)? pointLayer,
   }) {
     return rasterTiles?.call(urlTemplate, attribution);
   }
@@ -353,6 +367,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     TResult Function(String urlTemplate, String styleJson, String? attribution)?
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
+    TResult Function(List<Point> features)? pointLayer,
     required TResult orElse(),
   }) {
     if (rasterTiles != null) {
@@ -368,6 +383,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     required TResult Function(LayerConfig_RasterTiles value) rasterTiles,
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
+    required TResult Function(LayerConfig_PointLayer value) pointLayer,
   }) {
     return rasterTiles(this);
   }
@@ -379,6 +395,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     TResult? Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult? Function(LayerConfig_PointLayer value)? pointLayer,
   }) {
     return rasterTiles?.call(this);
   }
@@ -390,6 +407,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     TResult Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult Function(LayerConfig_PointLayer value)? pointLayer,
     required TResult orElse(),
   }) {
     if (rasterTiles != null) {
@@ -527,6 +545,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     )
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
+    required TResult Function(List<Point> features) pointLayer,
   }) {
     return vectorTiles(urlTemplate, styleJson, attribution);
   }
@@ -543,6 +562,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     )?
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
+    TResult? Function(List<Point> features)? pointLayer,
   }) {
     return vectorTiles?.call(urlTemplate, styleJson, attribution);
   }
@@ -555,6 +575,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     TResult Function(String urlTemplate, String styleJson, String? attribution)?
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
+    TResult Function(List<Point> features)? pointLayer,
     required TResult orElse(),
   }) {
     if (vectorTiles != null) {
@@ -570,6 +591,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     required TResult Function(LayerConfig_RasterTiles value) rasterTiles,
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
+    required TResult Function(LayerConfig_PointLayer value) pointLayer,
   }) {
     return vectorTiles(this);
   }
@@ -581,6 +603,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     TResult? Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult? Function(LayerConfig_PointLayer value)? pointLayer,
   }) {
     return vectorTiles?.call(this);
   }
@@ -592,6 +615,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     TResult Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult Function(LayerConfig_PointLayer value)? pointLayer,
     required TResult orElse(),
   }) {
     if (vectorTiles != null) {
@@ -663,10 +687,10 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     : _features = features,
       super._();
 
-  /// Stores the features to be rendered
+  /// Stores the Polygon features to be rendered
   final List<Polygon> _features;
 
-  /// Stores the features to be rendered
+  /// Stores the Polygon features to be rendered
   @override
   List<Polygon> get features {
     if (_features is EqualUnmodifiableListView) return _features;
@@ -714,6 +738,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     )
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
+    required TResult Function(List<Point> features) pointLayer,
   }) {
     return polygonLayer(features);
   }
@@ -730,6 +755,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     )?
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
+    TResult? Function(List<Point> features)? pointLayer,
   }) {
     return polygonLayer?.call(features);
   }
@@ -742,6 +768,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     TResult Function(String urlTemplate, String styleJson, String? attribution)?
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
+    TResult Function(List<Point> features)? pointLayer,
     required TResult orElse(),
   }) {
     if (polygonLayer != null) {
@@ -757,6 +784,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     required TResult Function(LayerConfig_RasterTiles value) rasterTiles,
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
+    required TResult Function(LayerConfig_PointLayer value) pointLayer,
   }) {
     return polygonLayer(this);
   }
@@ -768,6 +796,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     TResult? Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult? Function(LayerConfig_PointLayer value)? pointLayer,
   }) {
     return polygonLayer?.call(this);
   }
@@ -779,6 +808,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     TResult Function(LayerConfig_RasterTiles value)? rasterTiles,
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult Function(LayerConfig_PointLayer value)? pointLayer,
     required TResult orElse(),
   }) {
     if (polygonLayer != null) {
@@ -794,13 +824,204 @@ abstract class LayerConfig_PolygonLayer extends LayerConfig {
   }) = _$LayerConfig_PolygonLayerImpl;
   const LayerConfig_PolygonLayer._() : super._();
 
-  /// Stores the features to be rendered
+  /// Stores the Polygon features to be rendered
   List<Polygon> get features;
 
   /// Create a copy of LayerConfig
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LayerConfig_PolygonLayerImplCopyWith<_$LayerConfig_PolygonLayerImpl>
+  get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$LayerConfig_PointLayerImplCopyWith<$Res> {
+  factory _$$LayerConfig_PointLayerImplCopyWith(
+    _$LayerConfig_PointLayerImpl value,
+    $Res Function(_$LayerConfig_PointLayerImpl) then,
+  ) = __$$LayerConfig_PointLayerImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({List<Point> features});
+}
+
+/// @nodoc
+class __$$LayerConfig_PointLayerImplCopyWithImpl<$Res>
+    extends _$LayerConfigCopyWithImpl<$Res, _$LayerConfig_PointLayerImpl>
+    implements _$$LayerConfig_PointLayerImplCopyWith<$Res> {
+  __$$LayerConfig_PointLayerImplCopyWithImpl(
+    _$LayerConfig_PointLayerImpl _value,
+    $Res Function(_$LayerConfig_PointLayerImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LayerConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? features = null}) {
+    return _then(
+      _$LayerConfig_PointLayerImpl(
+        features:
+            null == features
+                ? _value._features
+                : features // ignore: cast_nullable_to_non_nullable
+                    as List<Point>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$LayerConfig_PointLayerImpl extends LayerConfig_PointLayer {
+  const _$LayerConfig_PointLayerImpl({required final List<Point> features})
+    : _features = features,
+      super._();
+
+  /// Stores the Point features to be rendered
+  final List<Point> _features;
+
+  /// Stores the Point features to be rendered
+  @override
+  List<Point> get features {
+    if (_features is EqualUnmodifiableListView) return _features;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_features);
+  }
+
+  @override
+  String toString() {
+    return 'LayerConfig.pointLayer(features: $features)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LayerConfig_PointLayerImpl &&
+            const DeepCollectionEquality().equals(other._features, _features));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_features));
+
+  /// Create a copy of LayerConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$LayerConfig_PointLayerImplCopyWith<_$LayerConfig_PointLayerImpl>
+  get copyWith =>
+      __$$LayerConfig_PointLayerImplCopyWithImpl<_$LayerConfig_PointLayerImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() osm,
+    required TResult Function(String urlTemplate, String? attribution)
+    rasterTiles,
+    required TResult Function(
+      String urlTemplate,
+      String styleJson,
+      String? attribution,
+    )
+    vectorTiles,
+    required TResult Function(List<Polygon> features) polygonLayer,
+    required TResult Function(List<Point> features) pointLayer,
+  }) {
+    return pointLayer(features);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? osm,
+    TResult? Function(String urlTemplate, String? attribution)? rasterTiles,
+    TResult? Function(
+      String urlTemplate,
+      String styleJson,
+      String? attribution,
+    )?
+    vectorTiles,
+    TResult? Function(List<Polygon> features)? polygonLayer,
+    TResult? Function(List<Point> features)? pointLayer,
+  }) {
+    return pointLayer?.call(features);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? osm,
+    TResult Function(String urlTemplate, String? attribution)? rasterTiles,
+    TResult Function(String urlTemplate, String styleJson, String? attribution)?
+    vectorTiles,
+    TResult Function(List<Polygon> features)? polygonLayer,
+    TResult Function(List<Point> features)? pointLayer,
+    required TResult orElse(),
+  }) {
+    if (pointLayer != null) {
+      return pointLayer(features);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LayerConfig_Osm value) osm,
+    required TResult Function(LayerConfig_RasterTiles value) rasterTiles,
+    required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
+    required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
+    required TResult Function(LayerConfig_PointLayer value) pointLayer,
+  }) {
+    return pointLayer(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LayerConfig_Osm value)? osm,
+    TResult? Function(LayerConfig_RasterTiles value)? rasterTiles,
+    TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
+    TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+  }) {
+    return pointLayer?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LayerConfig_Osm value)? osm,
+    TResult Function(LayerConfig_RasterTiles value)? rasterTiles,
+    TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
+    TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    required TResult orElse(),
+  }) {
+    if (pointLayer != null) {
+      return pointLayer(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class LayerConfig_PointLayer extends LayerConfig {
+  const factory LayerConfig_PointLayer({required final List<Point> features}) =
+      _$LayerConfig_PointLayerImpl;
+  const LayerConfig_PointLayer._() : super._();
+
+  /// Stores the Point features to be rendered
+  List<Point> get features;
+
+  /// Create a copy of LayerConfig
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$LayerConfig_PointLayerImplCopyWith<_$LayerConfig_PointLayerImpl>
   get copyWith => throw _privateConstructorUsedError;
 }
 

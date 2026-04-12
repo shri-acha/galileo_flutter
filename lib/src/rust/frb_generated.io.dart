@@ -74,6 +74,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LayerConfig dco_decode_layer_config(dynamic raw);
 
   @protected
+  List<Point> dco_decode_list_point(dynamic raw);
+
+  @protected
   List<Polygon> dco_decode_list_polygon(dynamic raw);
 
   @protected
@@ -110,7 +113,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MapViewport? dco_decode_opt_box_autoadd_map_viewport(dynamic raw);
 
   @protected
+  Point dco_decode_point(dynamic raw);
+
+  @protected
   Point2 dco_decode_point_2(dynamic raw);
+
+  @protected
+  PointStyle dco_decode_point_style(dynamic raw);
 
   @protected
   Polygon dco_decode_polygon(dynamic raw);
@@ -200,6 +209,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LayerConfig sse_decode_layer_config(SseDeserializer deserializer);
 
   @protected
+  List<Point> sse_decode_list_point(SseDeserializer deserializer);
+
+  @protected
   List<Polygon> sse_decode_list_polygon(SseDeserializer deserializer);
 
   @protected
@@ -242,7 +254,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Point sse_decode_point(SseDeserializer deserializer);
+
+  @protected
   Point2 sse_decode_point_2(SseDeserializer deserializer);
+
+  @protected
+  PointStyle sse_decode_point_style(SseDeserializer deserializer);
 
   @protected
   Polygon sse_decode_polygon(SseDeserializer deserializer);
@@ -349,6 +367,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_layer_config(LayerConfig self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_point(List<Point> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_polygon(List<Polygon> self, SseSerializer serializer);
 
   @protected
@@ -400,7 +421,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_point(Point self, SseSerializer serializer);
+
+  @protected
   void sse_encode_point_2(Point2 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_point_style(PointStyle self, SseSerializer serializer);
 
   @protected
   void sse_encode_polygon(Polygon self, SseSerializer serializer);

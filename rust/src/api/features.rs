@@ -1,12 +1,13 @@
-use crate::api::dart_types::{PolygonSymbol,Polygon};
+use crate::api::dart_types::{PolygonSymbol,Polygon,Point,PointSymbol};
 use galileo::layer::feature_layer::symbol::SimplePolygonSymbol;
-use galileo::galileo_types::cartesian::Point3;
+use galileo::galileo_types::cartesian::{Point3,Point2};
 use galileo::galileo_types::geo::impls::GeoPoint2d;
 use galileo::render::render_bundle::RenderBundle;
 use galileo::galileo_types::geometry::{Geometry,Geom};
 use galileo::galileo_types::geo::Projection;
 use galileo::galileo_types::geo::NewGeoPoint;
 use galileo::galileo_types::impls::ClosedContour;
+use galileo::render::point_paint::PointPaint;
 
 use galileo::layer::feature_layer::{Feature,symbol::Symbol};
 
@@ -40,6 +41,26 @@ impl Feature for Polygon {
     }
 }
 
+impl Geometry for Point {
+    type Point = GeoPoint2d;
+
+    fn project<P: Projection<InPoint = Self::Point> + ?Sized>(
+        &self,
+        projection: &P,
+    ) -> Option<Geom<P::OutPoint>> {
+
+        let coordinate: GeoPoint2d = GeoPoint2d::latlon(self.coordinate.0, self.coordinate.1);
+        coordinate.project(projection)
+    }
+}
+
+impl Feature for Point {
+    type Geom = Point;
+    fn geometry(&self) -> &Self::Geom {
+        self
+    }
+}
+
 impl PolygonSymbol {
     fn get_polygon_symbol(&self, feature: &Polygon) -> SimplePolygonSymbol {
         let stroke_color = feature.style.strokeColor.to_galileo();
@@ -67,3 +88,17 @@ impl Symbol<Polygon> for PolygonSymbol {
     }
 }
 
+
+impl Symbol<Point> for PointSymbol {
+    fn render(
+        &self,
+        feature: &Point,
+        geometry: &Geom<Point3>,
+        min_resolution: f64,
+        bundle: &mut RenderBundle,
+    ) {
+        if let Geom::Point(point) = geometry {
+            bundle.add_point(point, &PointPaint::circle(feature.style.fillColor.to_galileo(),8.0), min_resolution);
+        }
+    }
+}

@@ -83,8 +83,13 @@ pub enum LayerConfig {
     },
     /// Layer to render polygons
     PolygonLayer {
-        /// Stores the features to be rendered
+        /// Stores the Polygon features to be rendered
        features: Vec<Polygon>,
+    },
+
+    PointLayer {
+        /// Stores the Point features to be rendered
+       features: Vec<Point>,
     },
 }
 
@@ -121,8 +126,30 @@ pub struct PolygonStyle {
 #[derive(Clone, Debug)]
 pub struct PolygonSymbol {}
 
+/// Points with properties for colors
+/// Usage:
+///   Point(
+///     coordinate: (27.7,85.3),
+///     style: PointStyle(
+///       Color: (0.2,0.5,0.9,0.8),
+///     ),
+///   )
+#[derive(Clone, Debug,PartialEq)]
+pub struct Point {
+    pub coordinate: (f64, f64),
+    pub style: PointStyle,
+}
+
+#[derive(Clone, Debug,PartialEq)]
+pub struct PointStyle {
+    pub fillColor: Color,
+    // pub border_color: Color,
+}
+
+#[derive(Clone, Debug)]
+pub struct PointSymbol{}
+
 // Manual type definitions for Dart-friendly versions
-//
 /// 2D point in cartesian coordinate space.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {

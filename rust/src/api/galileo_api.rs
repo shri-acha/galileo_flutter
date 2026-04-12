@@ -224,6 +224,11 @@ pub async fn add_session_layer(
             let layer = FeatureLayer::new(features, PolygonSymbol {},Crs::WGS84);
             session.add_layer(layer).await;
         }
+
+        LayerConfig::PointLayer { features } => {
+            let layer = FeatureLayer::new(features, PointSymbol {},Crs::WGS84);
+            session.add_layer(layer).await;
+        }
     }
 
     Ok(())
