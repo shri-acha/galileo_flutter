@@ -107,7 +107,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                       case 'vector_tile_layer_1':
                         setState(() {
                           statusMessage = 'Loading...';
-                          _layerConfigString = 'vector_tile_layer_1';
                         });
                         final style = await rootBundle.loadString(
                           "assets/vt_style.json",
@@ -118,6 +117,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                               urlTemplate: MAP_TILER_URL_TEMPLATE,
                               styleJson: style,
                             );
+                            _layerConfigString = 'vector_tile_layer_1';
                             statusMessage = 'Map is ready';
                           });
                         }
@@ -135,6 +135,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                               urlTemplate: MAP_TILER_URL_TEMPLATE,
                               styleJson: style,
                             );
+                            _layerConfigString = 'vector_tile_layer_2';
                             statusMessage = 'Map is ready';
                           });
                         }
