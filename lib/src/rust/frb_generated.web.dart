@@ -46,6 +46,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MouseEvent dco_decode_box_autoadd_mouse_event(dynamic raw);
 
   @protected
+  Point dco_decode_box_autoadd_point(dynamic raw);
+
+  @protected
   Point2 dco_decode_box_autoadd_point_2(dynamic raw);
 
   @protected
@@ -177,6 +180,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   MouseEvent sse_decode_box_autoadd_mouse_event(SseDeserializer deserializer);
+
+  @protected
+  Point sse_decode_box_autoadd_point(SseDeserializer deserializer);
 
   @protected
   Point2 sse_decode_box_autoadd_point_2(SseDeserializer deserializer);
@@ -331,6 +337,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     MouseEvent self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_box_autoadd_point(Point self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_point_2(Point2 self, SseSerializer serializer);

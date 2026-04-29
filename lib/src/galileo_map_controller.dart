@@ -27,6 +27,7 @@ class GalileoMapController {
   final MapSize size;
   final MapInitConfig config;
   final List<LayerConfig> layers;
+  final _pointLayers = {};
 
   final int sessionId;
   final rx.BehaviorSubject<GalileoMapState> _stateBroadcast;
@@ -186,6 +187,117 @@ class GalileoMapController {
       }
     }
   }
+
+  /// Creates a managed point layer on the Rust side and stores the handle under name.
+  Future<int?> createPointLayer(
+    String name, {
+    List<Point> initialPoints = const [],
+  }) async {
+    if (!_running) return null;
+    try {
+      final id = await rlib.createFeaturePointLayer(
+        sessionId: sessionId,
+        initialPoints: initialPoints,
+      );
+      _pointLayers[name] = id;
+      return id;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error creating point layer "$name": $e');
+      return null;
+    }
+  }
+
+  /// Creates a managed polygon layer on the Rust side and stores the handle under name.
+  // Future<int?> createPolygonLayer(
+  //   String name, {
+  //   List<Polygon> initialPolygons = const [],
+  // }) async {
+  //   if (!_running) return null;
+  //   try {
+  //     final id = await rlib.createFeaturePolygonLayer(
+  //       sessionId: sessionId,
+  //       initialPolygons: initialPolygons,
+  //     );
+  //     _polygonLayers[name] = id;
+  //     return id;
+  //   } catch (e) {
+  //     if (kDebugMode) debugPrint('Error creating polygon layer "$name": $e');
+  //     return null;
+  //   }
+  // }
+
+  Future<int> addPoint(String layerName, Point point) async {
+    final id = _pointLayers[layerName];
+    if (id == null) {
+      if (kDebugMode) debugPrint('No point layer named "$layerName"');
+      return -1;
+    }
+    try {
+      return await rlib.addPointToLayer(layerId: id, point: point);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error adding point to "$layerName": $e');
+      return -1;
+    }
+  }
+
+  Future<bool> removePoint(String layerName, int index) async {
+    final id = _pointLayers[layerName];
+    if (id == null) return false;
+    try {
+      return await rlib.removePointFromLayer(layerId: id, index: index);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error removing point from "$layerName": $e');
+      return false;
+    }
+  }
+
+  // Future<bool> replacePoints(String layerName, List<Point> points) async {
+  //   final id = _pointLayers[layerName];
+  //   if (id == null) return false;
+  //   try {
+  //     return await rlib.replacePointsInLayer(layerId: id, points: points);
+  //   } catch (e) {
+  //     if (kDebugMode) debugPrint('Error replacing points in "$layerName": $e');
+  //     return false;
+  //   }
+  // }
+
+  // Future<int> addPolygon(String layerName, Polygon polygon) async {
+  //   final id = _polygonLayers[layerName];
+  //   if (id == null) {
+  //     if (kDebugMode) debugPrint('No polygon layer named "$layerName"');
+  //     return -1;
+  //   }
+  //   try {
+  //     return await rlib.addPolygonToLayer(layerId: id, polygon: polygon);
+  //   } catch (e) {
+  //     if (kDebugMode) debugPrint('Error adding polygon to "$layerName": $e');
+  //     return -1;
+  //   }
+  // }
+  //
+  // Future<bool> removePolygon(String layerName, int index) async {
+  //   final id = _polygonLayers[layerName];
+  //   if (id == null) return false;
+  //   try {
+  //     return await rlib.removePolygonFromLayer(layerId: id, index: index);
+  //   } catch (e) {
+  //     if (kDebugMode) debugPrint('Error removing polygon from "$layerName": $e');
+  //     return false;
+  //   }
+  // }
+  //
+  // /// Replaces every polygon in the named layer atomically.
+  // Future<bool> replacePolygons(String layerName, List<Polygon> polygons) async {
+  //   final id = _polygonLayers[layerName];
+  //   if (id == null) return false;
+  //   try {
+  //     return await rlib.replacePolygonsInLayer(layerId: id, polygons: polygons);
+  //   } catch (e) {
+  //     if (kDebugMode) debugPrint('Error replacing polygons in "$layerName": $e');
+  //     return false;
+  //   }
+  // }
 
   /// Dispose of the controller and clean up resources
   Future<void> dispose() async {

@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => 56949982;
+  int get rustContentHash => -507296754;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -78,9 +78,19 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<int> crateApiGalileoApiAddPointToLayer({
+    required int layerId,
+    required Point point,
+  });
+
   Future<void> crateApiGalileoApiAddSessionLayer({
     required int sessionId,
     required LayerConfig layerConfig,
+  });
+
+  Future<int> crateApiGalileoApiCreateFeaturePointLayer({
+    required int sessionId,
+    required List<Point> initialPoints,
   });
 
   Future<CreateNewSessionResponse> crateApiGalileoApiCreateNewMapSession({
@@ -113,6 +123,11 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiGalileoApiMarkSessionAlive({required int sessionId});
 
+  Future<bool> crateApiGalileoApiRemovePointFromLayer({
+    required int layerId,
+    required int index,
+  });
+
   Future<void> crateApiGalileoApiRequestMapRedraw({required int sessionId});
 
   Future<void> crateApiGalileoApiResizeSession({
@@ -132,6 +147,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Future<int> crateApiGalileoApiAddPointToLayer({
+    required int layerId,
+    required Point point,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_u_32(layerId, serializer);
+          sse_encode_box_autoadd_point(point, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_32,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiGalileoApiAddPointToLayerConstMeta,
+        argValues: [layerId, point],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiGalileoApiAddPointToLayerConstMeta =>
+      const TaskConstMeta(
+        debugName: "add_point_to_layer",
+        argNames: ["layerId", "point"],
+      );
+
+  @override
   Future<void> crateApiGalileoApiAddSessionLayer({
     required int sessionId,
     required LayerConfig layerConfig,
@@ -145,7 +195,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 1,
+            funcId: 2,
             port: port_,
           );
         },
@@ -167,6 +217,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<int> crateApiGalileoApiCreateFeaturePointLayer({
+    required int sessionId,
+    required List<Point> initialPoints,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_u_32(sessionId, serializer);
+          sse_encode_list_point(initialPoints, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_32,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiGalileoApiCreateFeaturePointLayerConstMeta,
+        argValues: [sessionId, initialPoints],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiGalileoApiCreateFeaturePointLayerConstMeta =>
+      const TaskConstMeta(
+        debugName: "create_feature_point_layer",
+        argNames: ["sessionId", "initialPoints"],
+      );
+
+  @override
   Future<CreateNewSessionResponse> crateApiGalileoApiCreateNewMapSession({
     required PlatformInt64 engineHandle,
     required MapInitConfig config,
@@ -180,7 +265,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 4,
             port: port_,
           );
         },
@@ -213,7 +298,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 5,
             port: port_,
           );
         },
@@ -244,7 +329,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 6,
             port: port_,
           );
         },
@@ -277,7 +362,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 7,
             port: port_,
           );
         },
@@ -310,7 +395,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 8,
             port: port_,
           );
         },
@@ -345,7 +430,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 9,
             port: port_,
           );
         },
@@ -375,7 +460,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 10,
             port: port_,
           );
         },
@@ -402,7 +487,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 11,
             port: port_,
           );
         },
@@ -430,7 +515,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 12,
             port: port_,
           );
         },
@@ -452,6 +537,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<bool> crateApiGalileoApiRemovePointFromLayer({
+    required int layerId,
+    required int index,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_u_32(layerId, serializer);
+          sse_encode_u_32(index, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiGalileoApiRemovePointFromLayerConstMeta,
+        argValues: [layerId, index],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiGalileoApiRemovePointFromLayerConstMeta =>
+      const TaskConstMeta(
+        debugName: "remove_point_from_layer",
+        argNames: ["layerId", "index"],
+      );
+
+  @override
   Future<void> crateApiGalileoApiRequestMapRedraw({required int sessionId}) {
     return handler.executeNormal(
       NormalTask(
@@ -461,7 +581,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 14,
             port: port_,
           );
         },
@@ -496,7 +616,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 15,
             port: port_,
           );
         },
@@ -527,7 +647,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 16,
             port: port_,
           );
         },
@@ -591,6 +711,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   MouseEvent dco_decode_box_autoadd_mouse_event(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_mouse_event(raw);
+  }
+
+  @protected
+  Point dco_decode_box_autoadd_point(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_point(raw);
   }
 
   @protected
@@ -1026,6 +1152,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   MouseEvent sse_decode_box_autoadd_mouse_event(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_mouse_event(deserializer));
+  }
+
+  @protected
+  Point sse_decode_box_autoadd_point(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_point(deserializer));
   }
 
   @protected
@@ -1482,6 +1614,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_mouse_event(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_point(Point self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_point(self, serializer);
   }
 
   @protected

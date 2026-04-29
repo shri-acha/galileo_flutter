@@ -1,6 +1,6 @@
 use crate::api::dart_types::{PolygonSymbol,Polygon,Point,PointSymbol};
 use galileo::layer::feature_layer::symbol::SimplePolygonSymbol;
-use galileo::galileo_types::cartesian::{Point3,Point2};
+use galileo::galileo_types::cartesian::Point3;
 use galileo::galileo_types::geo::impls::GeoPoint2d;
 use galileo::render::render_bundle::RenderBundle;
 use galileo::galileo_types::geometry::{Geometry,Geom};

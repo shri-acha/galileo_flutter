@@ -52,6 +52,26 @@ Future<void> addSessionLayer({
   layerConfig: layerConfig,
 );
 
+Future<int> createFeaturePointLayer({
+  required int sessionId,
+  required List<Point> initialPoints,
+}) => RustLib.instance.api.crateApiGalileoApiCreateFeaturePointLayer(
+  sessionId: sessionId,
+  initialPoints: initialPoints,
+);
+
+Future<int> addPointToLayer({required int layerId, required Point point}) =>
+    RustLib.instance.api.crateApiGalileoApiAddPointToLayer(
+      layerId: layerId,
+      point: point,
+    );
+
+Future<bool> removePointFromLayer({required int layerId, required int index}) =>
+    RustLib.instance.api.crateApiGalileoApiRemovePointFromLayer(
+      layerId: layerId,
+      index: index,
+    );
+
 Future<MapViewport?> getMapViewport({required int sessionId}) =>
     RustLib.instance.api.crateApiGalileoApiGetMapViewport(sessionId: sessionId);
 

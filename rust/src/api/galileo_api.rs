@@ -234,6 +234,27 @@ pub async fn add_session_layer(
     Ok(())
 }
 
+pub async fn create_feature_point_layer(
+        session_id: SessionID,
+        initial_points: Vec<Point>,
+)->anyhow::Result<SessionID>{
+    Ok(1)
+}
+
+pub async fn add_point_to_layer(
+        layer_id: u32,
+        point: Point,
+)->anyhow::Result<u32>{
+    Ok(1)
+}
+
+pub async fn remove_point_from_layer(
+        layer_id: u32,
+        index: u32,
+)->anyhow::Result<bool>{
+    Ok(true)
+}
+
 pub async fn get_map_viewport(session_id: SessionID) -> Option<MapViewport> {
     let session = {
         SESSIONS
