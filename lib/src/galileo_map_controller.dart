@@ -154,7 +154,7 @@ class GalileoMapController {
 
   /// Get the current map viewport
   Future<MapViewport?> getViewport() async {
-    return null;
+    return rlib.getMapViewport(sessionId: sessionId);
   }
 
   /// Set the map viewport
@@ -189,7 +189,7 @@ class GalileoMapController {
   }
 
   /// Creates a managed point layer on the Rust side and stores the handle under name.
-  Future<int?> _addPointFeatureLayer(
+  Future<int?> addPointFeatureLayer(
     String name, {
     List<Point> initialPoints = const [],
   }) async {
@@ -244,7 +244,7 @@ class GalileoMapController {
     }
   }
 
-  Future<bool> removePoint(String layerName, int index) async {
+  Future<bool> removePointFromLayer(String layerName, int index) async {
     final id = _layers[layerName];
     if (id == null) return false;
     try {

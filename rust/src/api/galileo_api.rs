@@ -225,12 +225,12 @@ pub async fn add_session_layer(
         }
         LayerConfig::PolygonLayer { features } => {
             // PolygonSymbol is stateless; style is read per-feature at render time.
-            let layer = FeatureLayer::new(features, PolygonSymbol {},Crs::WGS84);
+            let layer = FeatureLayer::new(features, PolygonSymbol {},Crs::EPSG3857);
             session.add_layer(layer).await;
         }
 
         LayerConfig::PointLayer { features } => {
-            let layer = FeatureLayer::new(features, PointSymbol {},Crs::WGS84);
+            let layer = FeatureLayer::new(features, PointSymbol {},Crs::EPSG3857);
             session.add_layer(layer).await;
         }
     }
@@ -250,7 +250,7 @@ pub async fn add_point_feature_layer(
             .clone()
     };
 
-    let layer = FeatureLayer::new(initial_points, PointSymbol {},Crs::WGS84);
+    let layer = FeatureLayer::new(initial_points, PointSymbol {},Crs::EPSG3857);
     let layer_id = session.add_managed_layer(layer).await;
     Ok(layer_id)
 }

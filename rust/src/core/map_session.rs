@@ -208,6 +208,7 @@ impl MapSession {
 
         let feature_id = layer.features_mut().add(point);
         layer.update_feature(feature_id);
+        map.redraw();
 
         Ok(feature_id)
     }
@@ -228,6 +229,8 @@ impl MapSession {
             .ok_or_else(|| anyhow::anyhow!("Layer {} type mismatch on downcast", layer_id))?;
 
         let removed = layer.features_mut().remove(feature_id);
+        layer.update_all_features();
+        map.redraw();
         if removed.is_some() {
             Ok(true)
         } else {
