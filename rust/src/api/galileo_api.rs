@@ -42,16 +42,23 @@ pub fn galileo_flutter_init(ffi_ptr: i64) {
     IS_INITIALIZED.store(true, Ordering::SeqCst);
 }
 
-fn initialize_font_service() {
+fn initialize_font_service(){
     let rasterizer: RustybuzzRasterizer = RustybuzzRasterizer::default();
     let _service: &'static TextService = TextService::initialize(rasterizer);
-    if let Ok(default_font_source) = SystemSource::new().all_fonts() {
+    if let Ok(default_font_source) = SystemSource::new().all_fonts(){
         for font_source in default_font_source {
-            if let Handle::Path { path, .. } = font_source {
-                _service.load_fonts(path);
+            match font_source {
+                Handle::Path{path , ..}=>{
+                    _service.load_fonts(path);
+                }
+                Handle::Memory { bytes, .. } => {
+                    _service.load_font(bytes);
+                }
+                _=>{}
             }
         }
-    } else {
+    }
+    else{
         info!("Failed to find source!");
     }
 }
