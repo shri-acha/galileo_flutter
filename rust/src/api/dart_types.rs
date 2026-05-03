@@ -142,14 +142,13 @@ pub struct Point {
 #[derive(Clone, Debug, PartialEq)]
 pub struct PointStyle {
     pub fill_color: Color,
-    // pub border_color: Color,
+    pub size: f32,
 }
 
 #[derive(Clone, Debug)]
 pub struct PointSymbol {}
 
 // Manual type definitions for Dart-friendly versions
-/// 2D point in cartesian coordinate space.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {
     pub r: f64,

@@ -12,7 +12,6 @@ part 'dart_types.freezed.dart';
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from_rect`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`
 
-/// 2D point in cartesian coordinate space.
 class Color {
   final double r;
   final double g;
@@ -286,18 +285,20 @@ class Point2 {
 
 class PointStyle {
   final Color fillColor;
+  final double size;
 
-  const PointStyle({required this.fillColor});
+  const PointStyle({required this.fillColor, required this.size});
 
   @override
-  int get hashCode => fillColor.hashCode;
+  int get hashCode => fillColor.hashCode ^ size.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is PointStyle &&
           runtimeType == other.runtimeType &&
-          fillColor == other.fillColor;
+          fillColor == other.fillColor &&
+          size == other.size;
 }
 
 /// Closed geographic polygon with fill/stroke styling.

@@ -1092,9 +1092,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PointStyle dco_decode_point_style(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 1)
-      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
-    return PointStyle(fillColor: dco_decode_color(arr[0]));
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return PointStyle(
+      fillColor: dco_decode_color(arr[0]),
+      size: dco_decode_f_32(arr[1]),
+    );
   }
 
   @protected
@@ -1575,7 +1578,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PointStyle sse_decode_point_style(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_fillColor = sse_decode_color(deserializer);
-    return PointStyle(fillColor: var_fillColor);
+    var var_size = sse_decode_f_32(deserializer);
+    return PointStyle(fillColor: var_fillColor, size: var_size);
   }
 
   @protected
@@ -2010,6 +2014,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_point_style(PointStyle self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_color(self.fillColor, serializer);
+    sse_encode_f_32(self.size, serializer);
   }
 
   @protected

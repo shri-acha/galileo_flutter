@@ -4,26 +4,25 @@
 //! managing Galileo maps in Flutter applications with real texture rendering.
 
 use flutter_rust_bridge::frb;
+use font_kit::handle::Handle;
+use font_kit::source::SystemSource;
+use futures::future::join_all;
 use galileo::control::UserEventHandler;
-use galileo::galileo_types::geo::impls::GeoPoint2d;
+use galileo::galileo_types::geo::Crs;
 use galileo::layer::data_provider::remove_parameters_modifier;
 use galileo::layer::feature_layer::FeatureLayer;
-use galileo::galileo_types::geo::Crs;
 use galileo::layer::raster_tile_layer::RasterTileLayerBuilder;
 use galileo::layer::vector_tile_layer::style::VectorTileStyle;
 use galileo::layer::vector_tile_layer::VectorTileLayerBuilder;
 use galileo::render::text::text_service::TextService;
 use galileo::render::text::RustybuzzRasterizer;
-use font_kit::source::SystemSource;
-use font_kit::handle::Handle;
 use galileo::tile_schema::TileSchemaBuilder;
-use futures::future::join_all;
 use log::{debug, info};
 use std::sync::atomic::Ordering;
 
-use crate::api::dart_types::{*};
+use crate::api::dart_types::*;
 use crate::core::map_session::{MapSession, SessionID};
-use crate::core::{init_logger, TOKIO_HANDLE, IS_INITIALIZED, SESSIONS, TILE_CACHE_PATH};
+use crate::core::{init_logger, IS_INITIALIZED, SESSIONS, TILE_CACHE_PATH, TOKIO_HANDLE};
 
 #[frb(init)]
 pub fn init_galileo_flutter() {
@@ -43,23 +42,21 @@ pub fn galileo_flutter_init(ffi_ptr: i64) {
     IS_INITIALIZED.store(true, Ordering::SeqCst);
 }
 
-fn initialize_font_service(){
+fn initialize_font_service() {
     let rasterizer: RustybuzzRasterizer = RustybuzzRasterizer::default();
     let _service: &'static TextService = TextService::initialize(rasterizer);
-    if let Ok(default_font_source) = SystemSource::new().all_fonts(){
+    if let Ok(default_font_source) = SystemSource::new().all_fonts() {
         for font_source in default_font_source {
             match font_source {
-                Handle::Path{path , ..}=>{
+                Handle::Path { path, .. } => {
                     _service.load_fonts(path);
                 }
                 Handle::Memory { bytes, .. } => {
                     _service.load_font(bytes);
                 }
-                _=>{}
             }
         }
-    }
-    else{
+    } else {
         info!("Failed to find source!");
     }
 }
@@ -203,16 +200,13 @@ pub async fn add_session_layer(
                 .build()
                 .map_err(|e| anyhow::anyhow!("Failed to build tile schema: {}", e))?;
 
-            let mut builder =
-                VectorTileLayerBuilder::new_rest(create_url_source(url_template))
-                    .with_style(style)
-                    .with_tile_schema(tile_schema);
+            let mut builder = VectorTileLayerBuilder::new_rest(create_url_source(url_template))
+                .with_style(style)
+                .with_tile_schema(tile_schema);
 
             if let Some(ref path) = *TILE_CACHE_PATH.read() {
-                builder = builder.with_file_cache_modifier_checked(
-                    path,
-                    Box::new(remove_parameters_modifier),
-                );
+                builder = builder
+                    .with_file_cache_modifier_checked(path, Box::new(remove_parameters_modifier));
             }
 
             if let Some(attr) = attribution {
@@ -226,12 +220,12 @@ pub async fn add_session_layer(
         }
         LayerConfig::PolygonLayer { features } => {
             // PolygonSymbol is stateless; style is read per-feature at render time.
-            let layer = FeatureLayer::new(features, PolygonSymbol {},Crs::EPSG3857);
+            let layer = FeatureLayer::new(features, PolygonSymbol {}, Crs::EPSG3857);
             session.add_layer(layer).await;
         }
 
         LayerConfig::PointLayer { features } => {
-            let layer = FeatureLayer::new(features, PointSymbol {},Crs::EPSG3857);
+            let layer = FeatureLayer::new(features, PointSymbol {}, Crs::EPSG3857);
             session.add_layer(layer).await;
         }
     }
@@ -240,9 +234,9 @@ pub async fn add_session_layer(
 }
 
 pub async fn add_point_feature_layer(
-        session_id: SessionID,
-        initial_points: Vec<Point>,
-)->anyhow::Result<SessionID>{
+    session_id: SessionID,
+    initial_points: Vec<Point>,
+) -> anyhow::Result<u32> {
     let session = {
         SESSIONS
             .lock()
@@ -251,15 +245,15 @@ pub async fn add_point_feature_layer(
             .clone()
     };
 
-    let layer = FeatureLayer::new(initial_points, PointSymbol {},Crs::EPSG3857);
+    let layer = FeatureLayer::new(initial_points, PointSymbol {}, Crs::EPSG3857);
     let layer_id = session.add_managed_layer(layer).await;
     Ok(layer_id)
 }
 
 pub async fn add_polygon_feature_layer(
-        session_id: SessionID,
-        initial_polygons: Vec<Polygon>,
-)->anyhow::Result<SessionID>{
+    session_id: SessionID,
+    initial_polygons: Vec<Polygon>,
+) -> anyhow::Result<u32> {
     let session = {
         SESSIONS
             .lock()
@@ -268,16 +262,16 @@ pub async fn add_polygon_feature_layer(
             .clone()
     };
 
-    let layer = FeatureLayer::new(initial_polygons, PolygonSymbol {},Crs::EPSG3857);
+    let layer = FeatureLayer::new(initial_polygons, PolygonSymbol {}, Crs::EPSG3857);
     let layer_id = session.add_managed_layer(layer).await;
     Ok(layer_id)
 }
 
 pub async fn add_point_to_layer(
-        session_id: SessionID,
-        layer_id: u32,
-        point: Point,
-)->anyhow::Result<u32>{
+    session_id: SessionID,
+    layer_id: u32,
+    point: Point,
+) -> anyhow::Result<u32> {
     let session = {
         SESSIONS
             .lock()
@@ -285,15 +279,15 @@ pub async fn add_point_to_layer(
             .ok_or_else(|| anyhow::anyhow!("Session {} not found", session_id))?
             .clone()
     };
-    let feature_id = session.add_point_to_layer(layer_id,point).await?;
+    let feature_id = session.add_point_to_layer(layer_id, point).await?;
     Ok(unsafe { std::mem::transmute::<galileo::layer::FeatureId, u64>(feature_id) as u32 })
 }
 
 pub async fn add_polygon_to_layer(
-        session_id: SessionID,
-        layer_id: u32,
-        point: Polygon,
-)->anyhow::Result<u32>{
+    session_id: SessionID,
+    layer_id: u32,
+    point: Polygon,
+) -> anyhow::Result<u32> {
     let session = {
         SESSIONS
             .lock()
@@ -301,15 +295,15 @@ pub async fn add_polygon_to_layer(
             .ok_or_else(|| anyhow::anyhow!("Session {} not found", session_id))?
             .clone()
     };
-    let feature_id = session.add_polygon_to_layer(layer_id,point).await?;
+    let feature_id = session.add_polygon_to_layer(layer_id, point).await?;
     Ok(unsafe { std::mem::transmute::<galileo::layer::FeatureId, u64>(feature_id) as u32 })
 }
 
 pub async fn remove_point_from_layer(
-        session_id: SessionID,
-        layer_id: u32,
-        index: u32,
-)->anyhow::Result<bool>{
+    session_id: SessionID,
+    layer_id: u32,
+    index: u32,
+) -> anyhow::Result<bool> {
     let session = {
         SESSIONS
             .lock()
@@ -317,15 +311,15 @@ pub async fn remove_point_from_layer(
             .ok_or_else(|| anyhow::anyhow!("Session {} not found", session_id))?
             .clone()
     };
-    let id = unsafe { std::mem::transmute::<u64,galileo::layer::FeatureId>(index as u64)};
+    let id = unsafe { std::mem::transmute::<u64, galileo::layer::FeatureId>(index as u64) };
     session.remove_point_from_layer(layer_id, id).await
 }
 
 pub async fn remove_polygon_from_layer(
-        session_id: SessionID,
-        layer_id: u32,
-        index: u32,
-)->anyhow::Result<bool>{
+    session_id: SessionID,
+    layer_id: u32,
+    index: u32,
+) -> anyhow::Result<bool> {
     let session = {
         SESSIONS
             .lock()
@@ -333,7 +327,7 @@ pub async fn remove_polygon_from_layer(
             .ok_or_else(|| anyhow::anyhow!("Session {} not found", session_id))?
             .clone()
     };
-    let id = unsafe { std::mem::transmute::<u64,galileo::layer::FeatureId>(index as u64)};
+    let id = unsafe { std::mem::transmute::<u64, galileo::layer::FeatureId>(index as u64) };
     session.remove_polygon_from_layer(layer_id, id).await
 }
 

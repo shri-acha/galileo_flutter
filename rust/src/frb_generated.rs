@@ -1111,8 +1111,10 @@ impl SseDecode for crate::api::dart_types::PointStyle {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_fillColor = <crate::api::dart_types::Color>::sse_decode(deserializer);
+        let mut var_size = <f32>::sse_decode(deserializer);
         return crate::api::dart_types::PointStyle {
             fill_color: var_fillColor,
+            size: var_size,
         };
     }
 }
@@ -1676,7 +1678,11 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::dart_types::Point2>
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::dart_types::PointStyle {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [self.fill_color.into_into_dart().into_dart()].into_dart()
+        [
+            self.fill_color.into_into_dart().into_dart(),
+            self.size.into_into_dart().into_dart(),
+        ]
+        .into_dart()
     }
 }
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
@@ -2102,6 +2108,7 @@ impl SseEncode for crate::api::dart_types::PointStyle {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <crate::api::dart_types::Color>::sse_encode(self.fill_color, serializer);
+        <f32>::sse_encode(self.size, serializer);
     }
 }
 

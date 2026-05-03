@@ -27,7 +27,7 @@ class GalileoMapController {
   final MapSize size;
   final MapInitConfig config;
   final List<LayerConfig> layers;
-  final _layers = {};
+  final Map<String, int> _layers = {};
 
   final int sessionId;
   final rx.BehaviorSubject<GalileoMapState> _stateBroadcast;
@@ -224,25 +224,6 @@ class GalileoMapController {
       return null;
     }
   }
-
-  /// Creates a managed polygon layer on the Rust side and stores the handle under name.
-  // Future<int?> createPolygonLayer(
-  //   String name, {
-  //   List<Polygon> initialPolygons = const [],
-  // }) async {
-  //   if (!_running) return null;
-  //   try {
-  //     final id = await rlib.createFeaturePolygonLayer(
-  //       sessionId: sessionId,
-  //       initialPolygons: initialPolygons,
-  //     );
-  //     _polygonLayers[name] = id;
-  //     return id;
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error creating polygon layer "$name": $e');
-  //     return null;
-  //   }
-  // }
 
   Future<int> addPointToLayer(String layerName, Point point) async {
     final id = _layers[layerName];

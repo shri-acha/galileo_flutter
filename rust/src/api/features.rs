@@ -1,15 +1,15 @@
-use crate::api::dart_types::{PolygonSymbol,Polygon,Point,PointSymbol};
-use galileo::layer::feature_layer::symbol::SimplePolygonSymbol;
+use crate::api::dart_types::{Point, PointSymbol, Polygon, PolygonSymbol};
 use galileo::galileo_types::cartesian::Point3;
 use galileo::galileo_types::geo::impls::GeoPoint2d;
-use galileo::render::render_bundle::RenderBundle;
-use galileo::galileo_types::geometry::{Geometry,Geom};
-use galileo::galileo_types::geo::Projection;
 use galileo::galileo_types::geo::NewGeoPoint;
+use galileo::galileo_types::geo::Projection;
+use galileo::galileo_types::geometry::{Geom, Geometry};
 use galileo::galileo_types::impls::ClosedContour;
+use galileo::layer::feature_layer::symbol::SimplePolygonSymbol;
 use galileo::render::point_paint::PointPaint;
+use galileo::render::render_bundle::RenderBundle;
 
-use galileo::layer::feature_layer::{Feature,symbol::Symbol};
+use galileo::layer::feature_layer::{symbol::Symbol, Feature};
 
 impl Geometry for Polygon {
     type Point = GeoPoint2d;
@@ -18,8 +18,8 @@ impl Geometry for Polygon {
         &self,
         projection: &P,
     ) -> Option<Geom<P::OutPoint>> {
-
-        let ring: Vec<GeoPoint2d> = self.points
+        let ring: Vec<GeoPoint2d> = self
+            .points
             .iter()
             .map(|(lat, lon)| GeoPoint2d::latlon(*lat, *lon))
             .collect();
@@ -48,7 +48,6 @@ impl Geometry for Point {
         &self,
         projection: &P,
     ) -> Option<Geom<P::OutPoint>> {
-
         let coordinate: GeoPoint2d = GeoPoint2d::latlon(self.coordinate.0, self.coordinate.1);
         coordinate.project(projection)
     }
@@ -83,11 +82,10 @@ impl Symbol<Polygon> for PolygonSymbol {
         min_resolution: f64,
         bundle: &mut RenderBundle,
     ) {
-            self.get_polygon_symbol(feature)
-                .render(&(), geometry, min_resolution, bundle)
+        self.get_polygon_symbol(feature)
+            .render(&(), geometry, min_resolution, bundle)
     }
 }
-
 
 impl Symbol<Point> for PointSymbol {
     fn render(
@@ -98,7 +96,11 @@ impl Symbol<Point> for PointSymbol {
         bundle: &mut RenderBundle,
     ) {
         if let Geom::Point(point) = geometry {
-            bundle.add_point(point, &PointPaint::circle(feature.style.fill_color.to_galileo(),8.0), min_resolution);
+            bundle.add_point(
+                point,
+                &PointPaint::circle(feature.style.fill_color.to_galileo(), feature.style.size),
+                min_resolution,
+            );
         }
     }
 }
