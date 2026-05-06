@@ -19,6 +19,7 @@ export 'package:galileo_flutter/src/rust/api/dart_types.dart'
         Polygon,
         PolygonStyle,
         Color,
+        Point2,
         Point,
         PointStyle;
 

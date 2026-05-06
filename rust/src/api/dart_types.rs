@@ -98,8 +98,8 @@ pub enum LayerConfig {
 ///   Polygon(
 ///     points: [(27.7,85.3), ...],
 ///     style: PolygonStyle(
-///       fillColor: (0.2,0.5,0.9,0.8),
-///       strokeColor: (1.0,1.0,1.0,1.0),
+///       fillColor: Color(0.2,0.5,0.9,0.8),
+///       strokeColor: Color(1.0,1.0,1.0,1.0),
 ///       strokeWidth: 2.0,
 ///       strokeOffset: 0.0,
 ///     ),
@@ -130,7 +130,8 @@ pub struct PolygonSymbol {}
 ///   Point(
 ///     coordinate: (27.7,85.3),
 ///     style: PointStyle(
-///       Color: (0.2,0.5,0.9,0.8),
+///       fillColor: (0.2,0.5,0.9,0.8),
+///       size: 0.8,
 ///     ),
 ///   )
 #[derive(Clone, Debug, PartialEq)]
