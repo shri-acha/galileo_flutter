@@ -286,7 +286,7 @@ pub async fn add_point_to_layer(
 pub async fn add_polygon_to_layer(
     session_id: SessionID,
     layer_id: u32,
-    point: Polygon,
+    polygon: Polygon,
 ) -> anyhow::Result<u32> {
     let session = {
         SESSIONS
@@ -295,7 +295,7 @@ pub async fn add_polygon_to_layer(
             .ok_or_else(|| anyhow::anyhow!("Session {} not found", session_id))?
             .clone()
     };
-    let feature_id = session.add_polygon_to_layer(layer_id, point).await?;
+    let feature_id = session.add_polygon_to_layer(layer_id, polygon).await?;
     Ok(unsafe { std::mem::transmute::<galileo::layer::FeatureId, u64>(feature_id) as u32 })
 }
 

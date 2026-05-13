@@ -81,11 +81,11 @@ Future<int> addPointToLayer({
 Future<int> addPolygonToLayer({
   required int sessionId,
   required int layerId,
-  required Polygon point,
+  required Polygon polygon,
 }) => RustLib.instance.api.crateApiGalileoApiAddPolygonToLayer(
   sessionId: sessionId,
   layerId: layerId,
-  point: point,
+  polygon: polygon,
 );
 
 Future<bool> removePointFromLayer({

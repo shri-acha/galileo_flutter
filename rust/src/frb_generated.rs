@@ -196,7 +196,7 @@ fn wire__crate__api__galileo_api__add_polygon_to_layer_impl(
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_session_id = <u32>::sse_decode(&mut deserializer);
             let api_layer_id = <u32>::sse_decode(&mut deserializer);
-            let api_point = <crate::api::dart_types::Polygon>::sse_decode(&mut deserializer);
+            let api_polygon = <crate::api::dart_types::Polygon>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -204,7 +204,7 @@ fn wire__crate__api__galileo_api__add_polygon_to_layer_impl(
                         let output_ok = crate::api::galileo_api::add_polygon_to_layer(
                             api_session_id,
                             api_layer_id,
-                            api_point,
+                            api_polygon,
                         )
                         .await?;
                         Ok(output_ok)

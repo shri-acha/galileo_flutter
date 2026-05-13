@@ -97,7 +97,7 @@ abstract class RustLibApi extends BaseApi {
   Future<int> crateApiGalileoApiAddPolygonToLayer({
     required int sessionId,
     required int layerId,
-    required Polygon point,
+    required Polygon polygon,
   });
 
   Future<void> crateApiGalileoApiAddSessionLayer({
@@ -276,7 +276,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<int> crateApiGalileoApiAddPolygonToLayer({
     required int sessionId,
     required int layerId,
-    required Polygon point,
+    required Polygon polygon,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -284,7 +284,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_u_32(sessionId, serializer);
           sse_encode_u_32(layerId, serializer);
-          sse_encode_box_autoadd_polygon(point, serializer);
+          sse_encode_box_autoadd_polygon(polygon, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -297,7 +297,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiGalileoApiAddPolygonToLayerConstMeta,
-        argValues: [sessionId, layerId, point],
+        argValues: [sessionId, layerId, polygon],
         apiImpl: this,
       ),
     );
@@ -306,7 +306,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiGalileoApiAddPolygonToLayerConstMeta =>
       const TaskConstMeta(
         debugName: "add_polygon_to_layer",
-        argNames: ["sessionId", "layerId", "point"],
+        argNames: ["sessionId", "layerId", "polygon"],
       );
 
   @override

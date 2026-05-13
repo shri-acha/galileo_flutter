@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:galileo_flutter/src/rust/api/dart_types.dart';
 import 'package:galileo_flutter/src/rust/api/galileo_api.dart' as rlib;
+import 'package:galileo_flutter/src/galileo_layer_controller.dart';
 
 import 'package:irondash_engine_context/irondash_engine_context.dart';
 import "package:rxdart/rxdart.dart" as rx;
@@ -26,8 +27,11 @@ enum GalileoMapState {
 class GalileoMapController {
   final MapSize size;
   final MapInitConfig config;
+
+  late final LayerController layer_controller;
+
   final List<LayerConfig> layers;
-  final Map<String, int> _layers = {};
+  final Map<String, int> _layer_names = {};
 
   final int sessionId;
   final rx.BehaviorSubject<GalileoMapState> _stateBroadcast;
@@ -43,7 +47,9 @@ class GalileoMapController {
     required rx.BehaviorSubject<GalileoMapState> stateBroadcast,
     StreamSubscription<GalileoMapState>? originalSub,
   }) : _stateBroadcast = stateBroadcast,
-       _originalSub = originalSub;
+       _originalSub = originalSub {
+    layer_controller = LayerController(sessionId: sessionId, layers: layers);
+  }
 
   /// Stream of map state changes
   Stream<GalileoMapState> get stateStream => _stateBroadcast.stream;
@@ -87,15 +93,12 @@ class GalileoMapController {
         originalSub: null,
       );
 
+      for (final layer in layers) {
+        await controller.layer_controller.addLayer(layer);
+      }
+
       controller._textureId = newSessionResp.textureId;
       controller._running = true;
-
-      for (final layer in layers) {
-        await rlib.addSessionLayer(
-          sessionId: controller.sessionId,
-          layerConfig: layer,
-        );
-      }
 
       await rlib.requestMapRedraw(sessionId: controller.sessionId);
 
@@ -162,19 +165,6 @@ class GalileoMapController {
     if (!_running) return;
   }
 
-  /// Add a layer to the map
-  Future<void> addLayer(LayerConfig layer) async {
-    if (!_running) return;
-
-    try {
-      await rlib.addSessionLayer(sessionId: sessionId, layerConfig: layer);
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error adding layer: $e');
-      }
-    }
-  }
-
   /// Resize the map
   Future<void> resize(MapSize newSize) async {
     if (!_running) return;
@@ -185,109 +175,6 @@ class GalileoMapController {
       if (kDebugMode) {
         debugPrint('Error resizing map: $e');
       }
-    }
-  }
-
-  /// Creates a managed point layer on the Rust side and stores the handle under name.
-  Future<int?> addPointFeatureLayer(
-    String name, {
-    List<Point> initialPoints = const [],
-  }) async {
-    if (!_running) return null;
-    try {
-      final id = await rlib.addPointFeatureLayer(
-        sessionId: sessionId,
-        initialPoints: initialPoints,
-      );
-      _layers[name] = id;
-      return id;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error creating point layer "$name": $e');
-      return null;
-    }
-  }
-
-  Future<int?> addPolygonFeatureLayer(
-    String name, {
-    List<Polygon> initialPolygons = const [],
-  }) async {
-    if (!_running) return null;
-    try {
-      final id = await rlib.addPolygonFeatureLayer(
-        sessionId: sessionId,
-        initialPolygons: initialPolygons,
-      );
-      _layers[name] = id;
-      return id;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error creating polygon layer "$name": $e');
-      return null;
-    }
-  }
-
-  Future<int> addPointToLayer(String layerName, Point point) async {
-    final id = _layers[layerName];
-    if (id == null) {
-      if (kDebugMode) debugPrint('No point layer named "$layerName"');
-      return -1;
-    }
-    try {
-      return await rlib.addPointToLayer(
-        sessionId: sessionId,
-        layerId: id,
-        point: point,
-      );
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error adding point to "$layerName": $e');
-      return -1;
-    }
-  }
-
-  Future<bool> removePointFromLayer(String layerName, int index) async {
-    final id = _layers[layerName];
-    if (id == null) return false;
-    try {
-      return await rlib.removePointFromLayer(
-        sessionId: sessionId,
-        layerId: id,
-        index: index,
-      );
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error removing point from "$layerName": $e');
-      return false;
-    }
-  }
-
-  Future<int> addPolygonToLayer(String layerName, Polygon polygon) async {
-    final id = _layers[layerName];
-    if (id == null) {
-      if (kDebugMode) debugPrint('No point layer named "$layerName"');
-      return -1;
-    }
-    try {
-      return await rlib.addPolygonToLayer(
-        sessionId: sessionId,
-        layerId: id,
-        point: polygon,
-      );
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error adding point to "$layerName": $e');
-      return -1;
-    }
-  }
-
-  Future<bool> removePolygonFromLayer(String layerName, int index) async {
-    final id = _layers[layerName];
-    if (id == null) return false;
-    try {
-      return await rlib.removePolygonFromLayer(
-        sessionId: sessionId,
-        layerId: id,
-        index: index,
-      );
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error removing point from "$layerName": $e');
-      return false;
     }
   }
 
