@@ -1,10 +1,13 @@
 import 'dart:ui' as ui;
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 import 'package:galileo_flutter/src/galileo_map_controller.dart';
+import 'package:galileo_flutter/src/galileo_layer_controller.dart';
+
 
 class ViewportBounds {
   final double xMin, xMax, yMin, yMax;
@@ -267,5 +270,117 @@ class CountChip extends StatelessWidget {
       padding: EdgeInsets.zero,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
+  }
+}
+
+class FeatureLayerManager {
+  static const _pointLayerName   = 'managed-points';
+  static const _polygonLayerName = 'managed-polygons';
+
+  final LayerController layerController;
+  final PolygonEditor?  _polygonEditor;
+
+  final List<int> _pointIds = [];
+
+  // Polygons: ID -> Polygon so the editor can look up geometry by ID,
+  // and so hit-testing can iterate current shapes.
+  final Map<int, Polygon> _polygons = {};
+
+  FeatureLayerManager({
+    required this.layerController,
+    PolygonEditor? polygonEditor,
+  }) : _polygonEditor = polygonEditor;
+
+  int get pointCount   => _pointIds.length;
+  int get polygonCount => _polygons.length;
+
+  Map<int, Polygon>       get polygons     => Map.unmodifiable(_polygons);
+
+  Future<void> initialize() async {
+    await layerController.addPointFeatureLayer(_pointLayerName);
+    await layerController.addPolygonFeatureLayer(_polygonLayerName);
+
+    _polygonEditor?.attach(this);
+  }
+
+  void dispose() {
+    _polygonEditor?.detach();
+    _pointIds.clear();
+    _polygons.clear();
+  }
+
+  Future<void> addPoint(Point point) async {
+    final id = await layerController.addPointToLayer(_pointLayerName, point);
+    if (id >= 0) {
+      _pointIds.add(id);
+    } else {
+      if (kDebugMode) debugPrint('addPoint: rust returned invalid id $id');
+    }
+  }
+
+  Future<void> removeLastPoint() async {
+    if (_pointIds.isEmpty) return;
+    final id      = _pointIds.last;
+    final removed = await layerController.removePointFromLayer(_pointLayerName, id);
+    if (removed) {
+      _pointIds.removeLast();
+    } else {
+      if (kDebugMode) debugPrint('removeLastPoint: rust could not remove id $id');
+    }
+  }
+
+  Future<void> clearPoints() async {
+    for (final id in List<int>.from(_pointIds)) {
+      await layerController.removePointFromLayer(_pointLayerName, id);
+    }
+    _pointIds.clear();
+  }
+
+  Future<void> addPolygon(Polygon polygon) async {
+    final id = await layerController.addPolygonToLayer(_polygonLayerName, polygon);
+    if (id >= 0) {
+      _polygons[id] = polygon;
+    } else {
+      if (kDebugMode) debugPrint('addPolygon: rust returned invalid id $id');
+    }
+  }
+
+  Future<int> updatePolygon(int oldId, Polygon updated) async {
+    final removed = await layerController.removePolygonFromLayer(
+        _polygonLayerName, oldId);
+    if (!removed) {
+      if (kDebugMode) {
+        debugPrint('updatePolygon: could not remove old id $oldId');
+      }
+    }
+    _polygons.remove(oldId);
+
+    final newId = await layerController.addPolygonToLayer(
+        _polygonLayerName, updated);
+    if (newId >= 0) {
+      _polygons[newId] = updated;
+    } else {
+      if (kDebugMode) debugPrint('updatePolygon: rust returned invalid id $newId');
+    }
+    return newId;
+  }
+
+  Future<void> removeLastPolygon() async {
+    if (_polygons.isEmpty) return;
+    final id      = _polygons.keys.last;
+    final removed = await layerController.removePolygonFromLayer(
+        _polygonLayerName, id);
+    if (removed) {
+      _polygons.remove(id);
+    } else {
+      if (kDebugMode) debugPrint('removeLastPolygon: rust could not remove id $id');
+    }
+  }
+
+  Future<void> clearPolygons() async {
+    for (final id in List<int>.from(_polygons.keys)) {
+      await layerController.removePolygonFromLayer(_polygonLayerName, id);
+    }
+    _polygons.clear();
   }
 }
