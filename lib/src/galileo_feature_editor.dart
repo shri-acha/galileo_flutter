@@ -8,7 +8,6 @@ import 'package:galileo_flutter/galileo_flutter.dart';
 import 'package:galileo_flutter/src/galileo_map_controller.dart';
 import 'package:galileo_flutter/src/galileo_layer_controller.dart';
 
-
 class ViewportBounds {
   final double xMin, xMax, yMin, yMax;
   const ViewportBounds({
@@ -53,20 +52,6 @@ abstract final class MapProjection {
     final my = vp.yMax - (pos.dy / size.height) * (vp.yMax - vp.yMin);
     return mercatorToLatLon(mx, my);
   }
-
-  static bool pointInPolygon(Offset p, List<Offset> poly) {
-    int crossings = 0;
-    for (int i = 0; i < poly.length; i++) {
-      final a = poly[i];
-      final b = poly[(i + 1) % poly.length];
-      if ((a.dy <= p.dy && b.dy > p.dy) || (b.dy <= p.dy && a.dy > p.dy)) {
-        if (p.dx < a.dx + (p.dy - a.dy) / (b.dy - a.dy) * (b.dx - a.dx)) {
-          crossings++;
-        }
-      }
-    }
-    return crossings.isOdd;
-  }
 }
 
 class EditOverlayPainter extends CustomPainter {
@@ -81,10 +66,9 @@ class EditOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (vertices.isEmpty) return;
-    final pts =
-        vertices
-            .map((v) => MapProjection.latLonToScreen(v, size, viewport))
-            .toList();
+    final pts = vertices
+        .map((v) => MapProjection.latLonToScreen(v, size, viewport))
+        .toList();
 
     if (pts.length >= 3) {
       final path = Path()..moveTo(pts[0].dx, pts[0].dy);
@@ -107,20 +91,17 @@ class EditOverlayPainter extends CustomPainter {
       );
     }
 
-    final midFill =
-        Paint()
-          ..color = Colors.white.withValues(alpha: 0.92)
-          ..style = PaintingStyle.fill;
-    final midBorder =
-        Paint()
-          ..color = const ui.Color(0xFFFFEB3B)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.8;
-    final plusStroke =
-        Paint()
-          ..color = const ui.Color(0xFFFF8F00)
-          ..strokeWidth = 1.8
-          ..style = PaintingStyle.stroke;
+    final midFill = Paint()
+      ..color = Colors.white.withValues(alpha: 0.92)
+      ..style = PaintingStyle.fill;
+    final midBorder = Paint()
+      ..color = const ui.Color(0xFFFFEB3B)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8;
+    final plusStroke = Paint()
+      ..color = const ui.Color(0xFFFF8F00)
+      ..strokeWidth = 1.8
+      ..style = PaintingStyle.stroke;
 
     for (int i = 0; i < pts.length; i++) {
       final a = pts[i];
@@ -170,10 +151,9 @@ class PendingPolygonPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (vertices.isEmpty) return;
-    final pts =
-        vertices
-            .map((v) => MapProjection.latLonToScreen(v, size, viewport))
-            .toList();
+    final pts = vertices
+        .map((v) => MapProjection.latLonToScreen(v, size, viewport))
+        .toList();
 
     // Translucent fill + dashed border when closed (3+ pts).
     if (pts.length >= 3) {
@@ -192,20 +172,18 @@ class PendingPolygonPainter extends CustomPainter {
 
     // Edge lines (open polyline).
     if (pts.length >= 2) {
-      final edgePaint =
-          Paint()
-            ..color = const ui.Color(0xFF0288D1)
-            ..strokeWidth = 2.0
-            ..style = PaintingStyle.stroke;
+      final edgePaint = Paint()
+        ..color = const ui.Color(0xFF0288D1)
+        ..strokeWidth = 2.0
+        ..style = PaintingStyle.stroke;
       for (int i = 0; i < pts.length - 1; i++) {
         canvas.drawLine(pts[i], pts[i + 1], edgePaint);
       }
       // Closing dashed preview line back to first vertex.
-      final dashPaint =
-          Paint()
-            ..color = const ui.Color(0x880288D1)
-            ..strokeWidth = 1.5
-            ..style = PaintingStyle.stroke;
+      final dashPaint = Paint()
+        ..color = const ui.Color(0x880288D1)
+        ..strokeWidth = 1.5
+        ..style = PaintingStyle.stroke;
       canvas.drawLine(pts.last, pts.first, dashPaint);
     }
 
@@ -274,11 +252,11 @@ class CountChip extends StatelessWidget {
 }
 
 class FeatureLayerManager {
-  static const _pointLayerName   = 'managed-points';
+  static const _pointLayerName = 'managed-points';
   static const _polygonLayerName = 'managed-polygons';
 
   final LayerController layerController;
-  final PolygonEditor?  _polygonEditor;
+  final PolygonEditor? _polygonEditor;
 
   final List<int> _pointIds = [];
 
@@ -291,10 +269,10 @@ class FeatureLayerManager {
     PolygonEditor? polygonEditor,
   }) : _polygonEditor = polygonEditor;
 
-  int get pointCount   => _pointIds.length;
+  int get pointCount => _pointIds.length;
   int get polygonCount => _polygons.length;
 
-  Map<int, Polygon>       get polygons     => Map.unmodifiable(_polygons);
+  Map<int, Polygon> get polygons => Map.unmodifiable(_polygons);
 
   Future<void> initialize() async {
     await layerController.addPointFeatureLayer(_pointLayerName);
@@ -309,6 +287,7 @@ class FeatureLayerManager {
     _polygons.clear();
   }
 
+  // Handling primitive objects like Polygon and Points
   Future<void> addPoint(Point point) async {
     final id = await layerController.addPointToLayer(_pointLayerName, point);
     if (id >= 0) {
@@ -320,12 +299,16 @@ class FeatureLayerManager {
 
   Future<void> removeLastPoint() async {
     if (_pointIds.isEmpty) return;
-    final id      = _pointIds.last;
-    final removed = await layerController.removePointFromLayer(_pointLayerName, id);
+    final id = _pointIds.last;
+    final removed = await layerController.removePointFromLayer(
+      _pointLayerName,
+      id,
+    );
     if (removed) {
       _pointIds.removeLast();
     } else {
-      if (kDebugMode) debugPrint('removeLastPoint: rust could not remove id $id');
+      if (kDebugMode)
+        debugPrint('removeLastPoint: rust could not remove id $id');
     }
   }
 
@@ -337,7 +320,10 @@ class FeatureLayerManager {
   }
 
   Future<void> addPolygon(Polygon polygon) async {
-    final id = await layerController.addPolygonToLayer(_polygonLayerName, polygon);
+    final id = await layerController.addPolygonToLayer(
+      _polygonLayerName,
+      polygon,
+    );
     if (id >= 0) {
       _polygons[id] = polygon;
     } else {
@@ -347,7 +333,9 @@ class FeatureLayerManager {
 
   Future<int> updatePolygon(int oldId, Polygon updated) async {
     final removed = await layerController.removePolygonFromLayer(
-        _polygonLayerName, oldId);
+      _polygonLayerName,
+      oldId,
+    );
     if (!removed) {
       if (kDebugMode) {
         debugPrint('updatePolygon: could not remove old id $oldId');
@@ -356,24 +344,30 @@ class FeatureLayerManager {
     _polygons.remove(oldId);
 
     final newId = await layerController.addPolygonToLayer(
-        _polygonLayerName, updated);
+      _polygonLayerName,
+      updated,
+    );
     if (newId >= 0) {
       _polygons[newId] = updated;
     } else {
-      if (kDebugMode) debugPrint('updatePolygon: rust returned invalid id $newId');
+      if (kDebugMode)
+        debugPrint('updatePolygon: rust returned invalid id $newId');
     }
     return newId;
   }
 
   Future<void> removeLastPolygon() async {
     if (_polygons.isEmpty) return;
-    final id      = _polygons.keys.last;
+    final id = _polygons.keys.last;
     final removed = await layerController.removePolygonFromLayer(
-        _polygonLayerName, id);
+      _polygonLayerName,
+      id,
+    );
     if (removed) {
       _polygons.remove(id);
     } else {
-      if (kDebugMode) debugPrint('removeLastPolygon: rust could not remove id $id');
+      if (kDebugMode)
+        debugPrint('removeLastPolygon: rust could not remove id $id');
     }
   }
 
@@ -382,5 +376,250 @@ class FeatureLayerManager {
       await layerController.removePolygonFromLayer(_polygonLayerName, id);
     }
     _polygons.clear();
+  }
+
+  /// Handling non-primitive object i.e. Flutter Widget 
+}
+
+abstract class FeatureEditor extends ChangeNotifier {
+  bool get isActive;
+  void updateViewport(ViewportBounds viewport);
+  void handlePointerDown(PointerDownEvent event, Size mapSize);
+  void handlePointerMove(PointerMoveEvent event, Size mapSize);
+  Future<void> handlePointerUp(PointerUpEvent event, Size mapSize);
+}
+
+class PolygonEditor extends FeatureEditor {
+  // config editor
+  static const _tapThreshold = 10.0;
+  static const _vertexHitR = 14.0;
+  static const _midpointHitR = 12.0;
+
+  // callbacks
+  final void Function(String message)? onStatusMessage;
+
+  final void Function(int? polygonId)? onSelectionChanged;
+
+  FeatureLayerManager? _features;
+
+  int? _selectedPolygonId;
+  List<(double, double)> _editingVertices = [];
+  ViewportBounds? _viewport;
+  int? _draggingVertexIndex;
+  Offset? _pointerDownPos;
+
+  PolygonEditor({this.onStatusMessage, this.onSelectionChanged});
+
+  @override
+  bool get isActive => _selectedPolygonId != null;
+
+  int? get selectedPolygonId => _selectedPolygonId;
+  List<(double, double)> get editingVertices =>
+      List.unmodifiable(_editingVertices);
+  ViewportBounds? get viewport => _viewport;
+
+  void attach(FeatureLayerManager features) => _features = features;
+
+  void detach() {
+    _features = null;
+    _deselect(notify: false);
+  }
+
+  @override
+  void updateViewport(ViewportBounds viewport) {
+    _viewport = viewport;
+    notifyListeners();
+  }
+
+  bool pointInPolygon(Offset p, List<Offset> poly) {
+    int crossings = 0;
+    for (int i = 0; i < poly.length; i++) {
+      final a = poly[i];
+      final b = poly[(i + 1) % poly.length];
+      if ((a.dy <= p.dy && b.dy > p.dy) || (b.dy <= p.dy && a.dy > p.dy)) {
+        if (p.dx < a.dx + (p.dy - a.dy) / (b.dy - a.dy) * (b.dx - a.dx)) {
+          crossings++;
+        }
+      }
+    }
+    return crossings.isOdd;
+  }
+
+  /// the widget calls this in its main tap dispatcher when in polygon draw mode
+  /// and not currently drawing.
+  Future<bool> trySelectAt(
+    Offset screenPos,
+    Size mapSize,
+    ViewportBounds vp,
+  ) async {
+    _viewport = vp;
+    final features = _features;
+    if (features == null) return false;
+
+    for (final id in features.polygons.keys) {
+      if (_hitPolygonBody(screenPos, id, mapSize)) {
+        await _selectPolygon(id);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void deselect() => _deselect();
+
+  Future<void> _selectPolygon(int id) async {
+    final poly = _features?.polygons[id];
+    if (poly == null) return;
+    _selectedPolygonId = id;
+    _editingVertices = List.from(poly.points);
+    onSelectionChanged?.call(id);
+    onStatusMessage?.call(
+      'Editing polygon — drag vertex to move · tap vertex to delete · tap ＋ to insert',
+    );
+    notifyListeners();
+  }
+
+  void _deselect({bool notify = true}) {
+    final hadSelection = _selectedPolygonId != null;
+    _selectedPolygonId = null;
+    _editingVertices = [];
+    _draggingVertexIndex = null;
+    _pointerDownPos = null;
+    if (hadSelection) onSelectionChanged?.call(null);
+    onStatusMessage?.call('Tap map to add features');
+    if (notify) notifyListeners();
+  }
+
+  @override
+  void handlePointerDown(PointerDownEvent event, Size mapSize) {
+    if (!isActive) return;
+    _pointerDownPos = event.localPosition;
+    _draggingVertexIndex = _hitVertex(event.localPosition, mapSize);
+  }
+
+  @override
+  void handlePointerMove(PointerMoveEvent event, Size mapSize) {
+    final vi = _draggingVertexIndex;
+    final vp = _viewport;
+    if (vi == null || vp == null || !isActive) return;
+    _editingVertices[vi] = MapProjection.screenToLatLon(
+      event.localPosition,
+      mapSize,
+      vp,
+    );
+    notifyListeners(); // live vertex drag
+  }
+
+  @override
+  Future<void> handlePointerUp(PointerUpEvent event, Size mapSize) async {
+    if (!isActive) return;
+
+    final down = _pointerDownPos;
+    final vi = _draggingVertexIndex;
+    final isTap =
+        down == null || (event.localPosition - down).distance < _tapThreshold;
+
+    _draggingVertexIndex = null;
+    _pointerDownPos = null;
+
+    if (vi != null) {
+      isTap ? await _removeVertex(vi) : await _commitEdits();
+    } else if (isTap) {
+      final ei = _hitEdgeMidpoint(event.localPosition, mapSize);
+      if (ei != null) {
+        await _insertVertexAfterEdge(ei);
+      } else {
+        _deselect();
+      }
+    }
+  }
+
+  Future<void> _commitEdits() async {
+    final features = _features;
+    final id = _selectedPolygonId;
+    if (features == null || id == null || _editingVertices.length < 3) return;
+
+    final updated = Polygon(
+      points: List.from(_editingVertices),
+      style: PolygonStyle(
+        fillColor: Color(r: 0.2, g: 0.5, b: 0.9, a: 0.8),
+        strokeColor: Color(r: 1.0, g: 1.0, b: 1.0, a: 1.0),
+        strokeWidth: 2.0,
+        strokeOffset: 0.0,
+      ),
+    );
+
+    final newId = await features.updatePolygon(id, updated);
+    _selectedPolygonId = newId;
+    onStatusMessage?.call(
+      'Polygon updated — ${_editingVertices.length} vertices',
+    );
+    notifyListeners();
+  }
+
+  Future<void> _removeVertex(int index) async {
+    if (_editingVertices.length <= 3) {
+      onStatusMessage?.call('Minimum 3 vertices');
+      return;
+    }
+    _editingVertices.removeAt(index);
+    notifyListeners();
+    await _commitEdits();
+  }
+
+  Future<void> _insertVertexAfterEdge(int edgeIndex) async {
+    final a = _editingVertices[edgeIndex];
+    final b = _editingVertices[(edgeIndex + 1) % _editingVertices.length];
+    final mid = ((a.$1 + b.$1) / 2, (a.$2 + b.$2) / 2);
+    _editingVertices.insert(edgeIndex + 1, mid);
+    notifyListeners();
+    await _commitEdits();
+  }
+
+  int? _hitVertex(Offset pos, Size size) {
+    final vp = _viewport;
+    if (vp == null) return null;
+    for (int i = 0; i < _editingVertices.length; i++) {
+      if ((MapProjection.latLonToScreen(_editingVertices[i], size, vp) - pos)
+              .distance <
+          _vertexHitR)
+        return i;
+    }
+    return null;
+  }
+
+  int? _hitEdgeMidpoint(Offset pos, Size size) {
+    final vp = _viewport;
+    if (vp == null) return null;
+    for (int i = 0; i < _editingVertices.length; i++) {
+      final a = MapProjection.latLonToScreen(_editingVertices[i], size, vp);
+      final b = MapProjection.latLonToScreen(
+        _editingVertices[(i + 1) % _editingVertices.length],
+        size,
+        vp,
+      );
+      if ((Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2) - pos).distance <
+          _midpointHitR)
+        return i;
+    }
+    return null;
+  }
+
+  bool _hitPolygonBody(Offset pos, int id, Size size) {
+    final poly = _features?.polygons[id];
+    final vp = _viewport;
+    if (poly == null || vp == null) return false;
+    return pointInPolygon(
+      pos,
+      poly.points
+          .map((t) => MapProjection.latLonToScreen(t, size, vp))
+          .toList(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _features = null;
+    super.dispose();
   }
 }

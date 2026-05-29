@@ -226,6 +226,8 @@ pub enum MouseButton {
     Other,
 }
 
+pub type FeatureId = u64;
+
 impl MouseButton {
     #[frb(ignore)]
     pub fn to_galileo(&self) -> galileo::control::MouseButton {

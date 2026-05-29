@@ -280,7 +280,11 @@ pub async fn add_point_to_layer(
             .clone()
     };
     let feature_id = session.add_point_to_layer(layer_id, point).await?;
-    Ok(unsafe { std::mem::transmute::<galileo::layer::FeatureId, u64>(feature_id) as u32 })
+    Ok(unsafe {
+        u32::try_from(std::mem::transmute::<galileo::layer::FeatureId, u64>(
+            feature_id,
+        ))?
+    })
 }
 
 pub async fn add_polygon_to_layer(
@@ -296,7 +300,12 @@ pub async fn add_polygon_to_layer(
             .clone()
     };
     let feature_id = session.add_polygon_to_layer(layer_id, polygon).await?;
-    Ok(unsafe { std::mem::transmute::<galileo::layer::FeatureId, u64>(feature_id) as u32 })
+    unsafe {
+        u32::try_from(std::mem::transmute::<galileo::layer::FeatureId, u64>(
+            feature_id,
+        ))
+        .map_err(|e| e.into())
+    }
 }
 
 pub async fn remove_point_from_layer(
@@ -311,7 +320,7 @@ pub async fn remove_point_from_layer(
             .ok_or_else(|| anyhow::anyhow!("Session {} not found", session_id))?
             .clone()
     };
-    let id = unsafe { std::mem::transmute::<u64, galileo::layer::FeatureId>(index as u64) };
+    let id = unsafe { std::mem::transmute::<u64, galileo::layer::FeatureId>(u64::from(index)) };
     session.remove_point_from_layer(layer_id, id).await
 }
 
@@ -327,7 +336,7 @@ pub async fn remove_polygon_from_layer(
             .ok_or_else(|| anyhow::anyhow!("Session {} not found", session_id))?
             .clone()
     };
-    let id = unsafe { std::mem::transmute::<u64, galileo::layer::FeatureId>(index as u64) };
+    let id = unsafe { std::mem::transmute::<u64, galileo::layer::FeatureId>(u64::from(index)) };
     session.remove_polygon_from_layer(layer_id, id).await
 }
 
