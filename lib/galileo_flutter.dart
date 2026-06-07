@@ -4,7 +4,7 @@ import 'dart:ffi' as ffi;
 
 import 'package:path_provider/path_provider.dart';
 
-export 'package:galileo_flutter/src/galileo_map_widget.dart'
+export 'package:galileo_flutter/src/map/widget.dart'
     show GalileoMapWidget;
 
 import 'src/rust/api/galileo_api.dart' as rlib;
@@ -22,6 +22,14 @@ export 'package:galileo_flutter/src/rust/api/dart_types.dart'
         Point2,
         Point,
         PointStyle;
+export 'package:galileo_flutter/src/map/widget.dart';
+export 'package:galileo_flutter/src/map/controller.dart';
+export 'package:galileo_flutter/src/layer/overlay.dart';
+export 'package:galileo_flutter/src/overlay/overlay_widget.dart';
+export 'package:galileo_flutter/src/overlay/polygon_draw_controller.dart';
+export 'package:galileo_flutter/src/overlay/overlay_polygon.dart';
+export 'package:galileo_flutter/src/layer/controller.dart';
+export 'package:galileo_flutter/src/galileo_feature_editor.dart';
 
 Future<void> initGalileo({String? cachePath}) async {
   await rlib_gen.RustLib.init();

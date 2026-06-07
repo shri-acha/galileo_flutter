@@ -30,6 +30,7 @@ mixin _$LayerConfig {
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
     required TResult Function(List<Point> features) pointLayer,
+    required TResult Function() widgetLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -43,6 +44,7 @@ mixin _$LayerConfig {
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
     TResult? Function(List<Point> features)? pointLayer,
+    TResult? Function()? widgetLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -52,6 +54,7 @@ mixin _$LayerConfig {
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
     TResult Function(List<Point> features)? pointLayer,
+    TResult Function()? widgetLayer,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -61,6 +64,7 @@ mixin _$LayerConfig {
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
     required TResult Function(LayerConfig_PointLayer value) pointLayer,
+    required TResult Function(LayerConfig_WidgetLayer value) widgetLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -69,6 +73,7 @@ mixin _$LayerConfig {
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult? Function(LayerConfig_WidgetLayer value)? widgetLayer,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -77,6 +82,7 @@ mixin _$LayerConfig {
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult Function(LayerConfig_WidgetLayer value)? widgetLayer,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 }
@@ -157,6 +163,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
     required TResult Function(List<Point> features) pointLayer,
+    required TResult Function() widgetLayer,
   }) {
     return osm();
   }
@@ -174,6 +181,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
     TResult? Function(List<Point> features)? pointLayer,
+    TResult? Function()? widgetLayer,
   }) {
     return osm?.call();
   }
@@ -187,6 +195,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
     TResult Function(List<Point> features)? pointLayer,
+    TResult Function()? widgetLayer,
     required TResult orElse(),
   }) {
     if (osm != null) {
@@ -203,6 +212,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
     required TResult Function(LayerConfig_PointLayer value) pointLayer,
+    required TResult Function(LayerConfig_WidgetLayer value) widgetLayer,
   }) {
     return osm(this);
   }
@@ -215,6 +225,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult? Function(LayerConfig_WidgetLayer value)? widgetLayer,
   }) {
     return osm?.call(this);
   }
@@ -227,6 +238,7 @@ class _$LayerConfig_OsmImpl extends LayerConfig_Osm {
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult Function(LayerConfig_WidgetLayer value)? widgetLayer,
     required TResult orElse(),
   }) {
     if (osm != null) {
@@ -338,6 +350,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
     required TResult Function(List<Point> features) pointLayer,
+    required TResult Function() widgetLayer,
   }) {
     return rasterTiles(urlTemplate, attribution);
   }
@@ -355,6 +368,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
     TResult? Function(List<Point> features)? pointLayer,
+    TResult? Function()? widgetLayer,
   }) {
     return rasterTiles?.call(urlTemplate, attribution);
   }
@@ -368,6 +382,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
     TResult Function(List<Point> features)? pointLayer,
+    TResult Function()? widgetLayer,
     required TResult orElse(),
   }) {
     if (rasterTiles != null) {
@@ -384,6 +399,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
     required TResult Function(LayerConfig_PointLayer value) pointLayer,
+    required TResult Function(LayerConfig_WidgetLayer value) widgetLayer,
   }) {
     return rasterTiles(this);
   }
@@ -396,6 +412,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult? Function(LayerConfig_WidgetLayer value)? widgetLayer,
   }) {
     return rasterTiles?.call(this);
   }
@@ -408,6 +425,7 @@ class _$LayerConfig_RasterTilesImpl extends LayerConfig_RasterTiles {
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult Function(LayerConfig_WidgetLayer value)? widgetLayer,
     required TResult orElse(),
   }) {
     if (rasterTiles != null) {
@@ -546,6 +564,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
     required TResult Function(List<Point> features) pointLayer,
+    required TResult Function() widgetLayer,
   }) {
     return vectorTiles(urlTemplate, styleJson, attribution);
   }
@@ -563,6 +582,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
     TResult? Function(List<Point> features)? pointLayer,
+    TResult? Function()? widgetLayer,
   }) {
     return vectorTiles?.call(urlTemplate, styleJson, attribution);
   }
@@ -576,6 +596,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
     TResult Function(List<Point> features)? pointLayer,
+    TResult Function()? widgetLayer,
     required TResult orElse(),
   }) {
     if (vectorTiles != null) {
@@ -592,6 +613,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
     required TResult Function(LayerConfig_PointLayer value) pointLayer,
+    required TResult Function(LayerConfig_WidgetLayer value) widgetLayer,
   }) {
     return vectorTiles(this);
   }
@@ -604,6 +626,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult? Function(LayerConfig_WidgetLayer value)? widgetLayer,
   }) {
     return vectorTiles?.call(this);
   }
@@ -616,6 +639,7 @@ class _$LayerConfig_VectorTilesImpl extends LayerConfig_VectorTiles {
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult Function(LayerConfig_WidgetLayer value)? widgetLayer,
     required TResult orElse(),
   }) {
     if (vectorTiles != null) {
@@ -739,6 +763,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
     required TResult Function(List<Point> features) pointLayer,
+    required TResult Function() widgetLayer,
   }) {
     return polygonLayer(features);
   }
@@ -756,6 +781,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
     TResult? Function(List<Point> features)? pointLayer,
+    TResult? Function()? widgetLayer,
   }) {
     return polygonLayer?.call(features);
   }
@@ -769,6 +795,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
     TResult Function(List<Point> features)? pointLayer,
+    TResult Function()? widgetLayer,
     required TResult orElse(),
   }) {
     if (polygonLayer != null) {
@@ -785,6 +812,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
     required TResult Function(LayerConfig_PointLayer value) pointLayer,
+    required TResult Function(LayerConfig_WidgetLayer value) widgetLayer,
   }) {
     return polygonLayer(this);
   }
@@ -797,6 +825,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult? Function(LayerConfig_WidgetLayer value)? widgetLayer,
   }) {
     return polygonLayer?.call(this);
   }
@@ -809,6 +838,7 @@ class _$LayerConfig_PolygonLayerImpl extends LayerConfig_PolygonLayer {
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult Function(LayerConfig_WidgetLayer value)? widgetLayer,
     required TResult orElse(),
   }) {
     if (polygonLayer != null) {
@@ -931,6 +961,7 @@ class _$LayerConfig_PointLayerImpl extends LayerConfig_PointLayer {
     vectorTiles,
     required TResult Function(List<Polygon> features) polygonLayer,
     required TResult Function(List<Point> features) pointLayer,
+    required TResult Function() widgetLayer,
   }) {
     return pointLayer(features);
   }
@@ -948,6 +979,7 @@ class _$LayerConfig_PointLayerImpl extends LayerConfig_PointLayer {
     vectorTiles,
     TResult? Function(List<Polygon> features)? polygonLayer,
     TResult? Function(List<Point> features)? pointLayer,
+    TResult? Function()? widgetLayer,
   }) {
     return pointLayer?.call(features);
   }
@@ -961,6 +993,7 @@ class _$LayerConfig_PointLayerImpl extends LayerConfig_PointLayer {
     vectorTiles,
     TResult Function(List<Polygon> features)? polygonLayer,
     TResult Function(List<Point> features)? pointLayer,
+    TResult Function()? widgetLayer,
     required TResult orElse(),
   }) {
     if (pointLayer != null) {
@@ -977,6 +1010,7 @@ class _$LayerConfig_PointLayerImpl extends LayerConfig_PointLayer {
     required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
     required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
     required TResult Function(LayerConfig_PointLayer value) pointLayer,
+    required TResult Function(LayerConfig_WidgetLayer value) widgetLayer,
   }) {
     return pointLayer(this);
   }
@@ -989,6 +1023,7 @@ class _$LayerConfig_PointLayerImpl extends LayerConfig_PointLayer {
     TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult? Function(LayerConfig_WidgetLayer value)? widgetLayer,
   }) {
     return pointLayer?.call(this);
   }
@@ -1001,6 +1036,7 @@ class _$LayerConfig_PointLayerImpl extends LayerConfig_PointLayer {
     TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
     TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
     TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult Function(LayerConfig_WidgetLayer value)? widgetLayer,
     required TResult orElse(),
   }) {
     if (pointLayer != null) {
@@ -1023,6 +1059,151 @@ abstract class LayerConfig_PointLayer extends LayerConfig {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LayerConfig_PointLayerImplCopyWith<_$LayerConfig_PointLayerImpl>
   get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$LayerConfig_WidgetLayerImplCopyWith<$Res> {
+  factory _$$LayerConfig_WidgetLayerImplCopyWith(
+    _$LayerConfig_WidgetLayerImpl value,
+    $Res Function(_$LayerConfig_WidgetLayerImpl) then,
+  ) = __$$LayerConfig_WidgetLayerImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$LayerConfig_WidgetLayerImplCopyWithImpl<$Res>
+    extends _$LayerConfigCopyWithImpl<$Res, _$LayerConfig_WidgetLayerImpl>
+    implements _$$LayerConfig_WidgetLayerImplCopyWith<$Res> {
+  __$$LayerConfig_WidgetLayerImplCopyWithImpl(
+    _$LayerConfig_WidgetLayerImpl _value,
+    $Res Function(_$LayerConfig_WidgetLayerImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of LayerConfig
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$LayerConfig_WidgetLayerImpl extends LayerConfig_WidgetLayer {
+  const _$LayerConfig_WidgetLayerImpl() : super._();
+
+  @override
+  String toString() {
+    return 'LayerConfig.widgetLayer()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LayerConfig_WidgetLayerImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() osm,
+    required TResult Function(String urlTemplate, String? attribution)
+    rasterTiles,
+    required TResult Function(
+      String urlTemplate,
+      String styleJson,
+      String? attribution,
+    )
+    vectorTiles,
+    required TResult Function(List<Polygon> features) polygonLayer,
+    required TResult Function(List<Point> features) pointLayer,
+    required TResult Function() widgetLayer,
+  }) {
+    return widgetLayer();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? osm,
+    TResult? Function(String urlTemplate, String? attribution)? rasterTiles,
+    TResult? Function(
+      String urlTemplate,
+      String styleJson,
+      String? attribution,
+    )?
+    vectorTiles,
+    TResult? Function(List<Polygon> features)? polygonLayer,
+    TResult? Function(List<Point> features)? pointLayer,
+    TResult? Function()? widgetLayer,
+  }) {
+    return widgetLayer?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? osm,
+    TResult Function(String urlTemplate, String? attribution)? rasterTiles,
+    TResult Function(String urlTemplate, String styleJson, String? attribution)?
+    vectorTiles,
+    TResult Function(List<Polygon> features)? polygonLayer,
+    TResult Function(List<Point> features)? pointLayer,
+    TResult Function()? widgetLayer,
+    required TResult orElse(),
+  }) {
+    if (widgetLayer != null) {
+      return widgetLayer();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(LayerConfig_Osm value) osm,
+    required TResult Function(LayerConfig_RasterTiles value) rasterTiles,
+    required TResult Function(LayerConfig_VectorTiles value) vectorTiles,
+    required TResult Function(LayerConfig_PolygonLayer value) polygonLayer,
+    required TResult Function(LayerConfig_PointLayer value) pointLayer,
+    required TResult Function(LayerConfig_WidgetLayer value) widgetLayer,
+  }) {
+    return widgetLayer(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(LayerConfig_Osm value)? osm,
+    TResult? Function(LayerConfig_RasterTiles value)? rasterTiles,
+    TResult? Function(LayerConfig_VectorTiles value)? vectorTiles,
+    TResult? Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult? Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult? Function(LayerConfig_WidgetLayer value)? widgetLayer,
+  }) {
+    return widgetLayer?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(LayerConfig_Osm value)? osm,
+    TResult Function(LayerConfig_RasterTiles value)? rasterTiles,
+    TResult Function(LayerConfig_VectorTiles value)? vectorTiles,
+    TResult Function(LayerConfig_PolygonLayer value)? polygonLayer,
+    TResult Function(LayerConfig_PointLayer value)? pointLayer,
+    TResult Function(LayerConfig_WidgetLayer value)? widgetLayer,
+    required TResult orElse(),
+  }) {
+    if (widgetLayer != null) {
+      return widgetLayer(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class LayerConfig_WidgetLayer extends LayerConfig {
+  const factory LayerConfig_WidgetLayer() = _$LayerConfig_WidgetLayerImpl;
+  const LayerConfig_WidgetLayer._() : super._();
 }
 
 /// @nodoc

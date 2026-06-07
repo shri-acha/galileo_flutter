@@ -3,9 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
-import 'package:galileo_flutter/src/galileo_map_controller.dart';
-import 'package:galileo_flutter/src/galileo_feature_editor.dart';
-import 'package:galileo_flutter/src/galileo_layer_controller.dart';
 import 'dart:ui' as ui;
 
 const MAP_TILER_API_KEY = '';
@@ -61,7 +58,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
   GalileoMapController? _controller;
   late Future<(GalileoMapController?, String?)> _controllerFuture;
 
-  // Feature manager
   FeatureLayerManager? _features;
   bool _layerReady = false;
 
@@ -80,16 +76,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
 
   ViewportBounds? _cachedViewport;
 
-  bool get _isEditing => _polygonEditor.isActive;
-
-  final _mapStackKey = GlobalKey();
-
-  Size get _currentMapSize {
-    final rb = _mapStackKey.currentContext?.findRenderObject() as RenderBox?;
-    return rb?.size ?? const Size(800, 600);
-  }
-
-
   @override
   void initState() {
     super.initState();
@@ -107,7 +93,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     super.dispose();
   }
 
-
   Future<void> _refreshViewport() async {
     final vp = await _controller?.getViewport();
     if (vp == null || !mounted) return;
@@ -117,8 +102,8 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     );
     setState(() => _cachedViewport = bounds);
     _polygonEditor.updateViewport(bounds);
+    await _controller?.layer_controller.updateViewport(vp);
   }
-
 
   Future<void> _switchLayer(LayerConfig newLayer) async {
     setState(() {
@@ -126,11 +111,10 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
       _statusMessage = 'Loading...';
     });
 
-    _polygonEditor.detach();
     _controller?.dispose();
-    _controller     = null;
+    _controller      = null;
     _features?.dispose();
-    _features       = null;
+    _features        = null;
     _pendingVertices = [];
     _cachedViewport  = null;
 
@@ -153,7 +137,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
 
     final manager = FeatureLayerManager(
       layerController: ctrl.layer_controller,
-      polygonEditor:   _polygonEditor,   // wires attach() inside initialize()
+      polygonEditor:   _polygonEditor,
     );
     await manager.initialize();
 
@@ -163,8 +147,34 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
       _layerReady    = true;
       _statusMessage = 'Tap map to add features';
     });
-  }
 
+    ctrl.layer_controller.addOverlay(
+      OverlayWidget(
+        lat: 0.0,
+        lon: 0.0,
+        width: 200,
+        height: 150,
+        type: OverlayType.static,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          alignment: Alignment.center,
+          child: const Text(
+            'Origin (0, 0)',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await _refreshViewport();
+  }
 
   Future<void> _addFeatureAtScreenPos(double x, double y, Size size) async {
     final features = _features;
@@ -188,17 +198,14 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
       return;
     }
 
-    // Polygon mode — ongoing draw takes priority over selection.
     if (_isDrawingPolygon) {
       await _addPendingVertex(lat, lon);
       return;
     }
 
-    // Try to select an existing polygon; start drawing if nothing was hit.
     final hit = await _polygonEditor.trySelectAt(screenPos, size, vp);
     if (!hit) await _addPendingVertex(lat, lon);
   }
-
 
   Future<void> _addPoint(
       FeatureLayerManager features, double lat, double lon) async {
@@ -235,7 +242,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     await features.clearPoints();
     if (mounted) setState(() => _statusMessage = 'Cleared all points');
   }
-
 
   Future<void> _addPendingVertex(double lat, double lon) async {
     if (_cachedViewport == null) await _refreshViewport();
@@ -288,12 +294,9 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     });
   }
 
-
   Future<void> _removeLastPolygon() async {
     final features = _features;
     if (features == null || features.polygonCount == 0) return;
-    final id = features.polygons.keys.last;
-    if (id == _polygonEditor.selectedPolygonId) _polygonEditor.deselect();
     await features.removeLastPolygon();
     if (mounted) {
       setState(() => _statusMessage =
@@ -304,45 +307,24 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
   Future<void> _clearAllPolygons() async {
     final features = _features;
     if (features == null || features.polygonCount == 0) return;
-    _polygonEditor.deselect();
     await features.clearPolygons();
     if (mounted) setState(() => _statusMessage = 'Cleared all polygons');
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final features  = _features;
-    final mapLocked = _isEditing;
+    final features = _features;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Galileo Flutter Demo'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: _isEditing
-            ? [
-                TextButton.icon(
-                  onPressed: () => _polygonEditor.deselect(),
-                  icon: const Icon(Icons.check_circle, color: Colors.white),
-                  label: const Text(
-                    'Done Editing',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ]
-            : null,
       ),
       body: Column(
         children: [
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
-            color: _isEditing
-                ? const ui.Color(0xFFFFF9C4)
-                : _isDrawingPolygon
-                    ? const ui.Color(0xFFE3F2FD)
-                    : Colors.grey[100],
             child: Row(
               children: [
                 Expanded(
@@ -356,17 +338,15 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _isEditing
-                            ? 'Map locked while editing · tap outside polygon to exit'
-                            : _isDrawingPolygon
-                                ? 'Keep tapping to add vertices — use the buttons to finish or cancel'
-                                : 'Tap to add feature · drag to pan · +/− to zoom',
+                        _isDrawingPolygon
+                            ? 'Keep tapping to add vertices — use the buttons to finish or cancel'
+                            : 'Tap to add feature · drag to pan · +/− to zoom',
                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
                 ),
-                if (!_isEditing && !_isDrawingPolygon)
+                if (!_isDrawingPolygon)
                   DropdownButton<String>(
                     value: _layerConfigString,
                     onChanged: (value) async {
@@ -430,7 +410,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                   ],
                   selected: {_drawMode},
                   onSelectionChanged: (s) {
-                    if (_isEditing) _polygonEditor.deselect();
                     if (_isDrawingPolygon) _cancelPendingPolygon();
                     setState(() => _drawMode = s.first);
                   },
@@ -513,182 +492,95 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                     Future.microtask(() => _initManagedLayer(controller));
                   }
 
-                  return Stack(
-                    key: _mapStackKey,
-                    fit: StackFit.expand,
-                    children: [
-                      AbsorbPointer(
-                        absorbing: mapLocked || _isDrawingPolygon,
-                        child: Builder(
-                          builder: (mapCtx) => Listener(
-                            onPointerDown: (e) =>
-                                _pointerDownPosition = e.localPosition,
-                            onPointerUp: (e) {
-                              final rb =
-                                  mapCtx.findRenderObject() as RenderBox;
-                              final size = rb.size;
-                              final down = _pointerDownPosition;
-                              if (down != null &&
-                                  (e.localPosition - down).distance <
-                                      _tapThreshold) {
-                                _addFeatureAtScreenPos(
-                                    e.localPosition.dx,
-                                    e.localPosition.dy,
-                                    size);
-                              }
-                              _pointerDownPosition = null;
-                            },
-                            onPointerCancel: (_) =>
-                                _pointerDownPosition = null,
-                            child: GalileoMapWidget.fromController(
-                              key:           ObjectKey(controller),
-                              controller:    controller!,
-                              size:          _kMapSize,
-                              config:        _kMapConfig,
-                              layers:        const [],
-                              enableKeyboard: !mapLocked && !_isDrawingPolygon,
-                              autoDispose:   false,
-                              child: Positioned(
-                                top: 10,
-                                right: 10,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        _isEditing
-                                            ? 'Edit Controls:'
-                                            : _isDrawingPolygon
-                                                ? 'Drawing Polygon:'
-                                                : 'Map Controls:',
+                  return Builder(
+                    builder: (mapCtx) => Listener(
+                      onPointerDown: (e) =>
+                          _pointerDownPosition = e.localPosition,
+                      onPointerUp: (e) {
+                        final rb = mapCtx.findRenderObject() as RenderBox;
+                        final size = rb.size;
+                        final down = _pointerDownPosition;
+                        if (down != null &&
+                            (e.localPosition - down).distance <
+                                _tapThreshold) {
+                          _addFeatureAtScreenPos(
+                              e.localPosition.dx,
+                              e.localPosition.dy,
+                              size);
+                        }
+                        _pointerDownPosition = null;
+                      },
+                      onPointerCancel: (_) => _pointerDownPosition = null,
+                      child: GalileoMapWidget.fromController(
+                        key:            ObjectKey(controller),
+                        controller:     controller!,
+                        config:         _kMapConfig,
+                        layers:         const [],
+                        enableKeyboard: true,
+                        autoDispose:    false,
+                        onViewportChanged: (vp) async {
+                          final bounds = ViewportBounds(
+                            xMin: vp.xMin, xMax: vp.xMax,
+                            yMin: vp.yMin, yMax: vp.yMax,
+                          );
+                          if (!mounted) return;
+                          setState(() => _cachedViewport = bounds);
+                          _polygonEditor.updateViewport(bounds);
+                          await _controller?.layer_controller.updateViewport(vp);
+                        },
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(height: 4),
+                                    const Text('• Tap to add feature',
+                                        style: TextStyle(fontSize: 10)),
+                                    const Text('• Drag to pan',
+                                        style: TextStyle(fontSize: 10)),
+                                    const Text('• Pinch to zoom',
+                                        style: TextStyle(fontSize: 10)),
+                                    const Text('• Arrow keys to pan',
+                                        style: TextStyle(fontSize: 10)),
+                                    const Text('• +/- to zoom',
+                                        style: TextStyle(fontSize: 10)),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                        'Points: ${features?.pointCount ?? 0}',
                                         style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      if (_isEditing) ...[
-                                        const Text('• Map locked (editing)',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                color: Colors.orange)),
-                                        const Text('• Drag vertex to move',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• Tap vertex to delete',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• Tap ＋ to insert vertex',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• Tap outside to exit edit',
-                                            style: TextStyle(fontSize: 10)),
-                                      ] else if (_isDrawingPolygon) ...[
-                                        const Text('• Tap to add vertex',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• Need ≥3 to finish',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                color: Colors.blue)),
-                                        const Text('• Drag to pan while drawing',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text(
-                                            '• Use toolbar to finish/cancel',
-                                            style: TextStyle(fontSize: 10)),
-                                      ] else ...[
-                                        const Text('• Tap to add feature',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• Drag to pan',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• Pinch to zoom',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• Arrow keys to pan',
-                                            style: TextStyle(fontSize: 10)),
-                                        const Text('• +/- to zoom',
-                                            style: TextStyle(fontSize: 10)),
-                                      ],
-                                      const SizedBox(height: 4),
-                                      Text(
-                                          'Points: ${features?.pointCount ?? 0}',
-                                          style: const TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.red)),
-                                      Text(
-                                          'Polygons: ${features?.polygonCount ?? 0}',
-                                          style: const TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue)),
-                                    ],
-                                  ),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red)),
+                                    Text(
+                                        'Polygons: ${features?.polygonCount ?? 0}',
+                                        style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue)),
+                                  ],
                                 ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-
-                      if (_isDrawingPolygon && _cachedViewport != null)
-                        Listener(
-                          behavior: HitTestBehavior.opaque,
-                          onPointerDown: (e) =>
-                              _pointerDownPosition = e.localPosition,
-                          onPointerUp: (e) {
-                            final down = _pointerDownPosition;
-                            _pointerDownPosition = null;
-                            if (down != null &&
-                                (e.localPosition - down).distance <
-                                    _tapThreshold) {
-                              _addFeatureAtScreenPos(e.localPosition.dx,
-                                  e.localPosition.dy, _currentMapSize);
-                            }
-                          },
-                          onPointerCancel: (_) => _pointerDownPosition = null,
-                          child: CustomPaint(
-                            painter: PendingPolygonPainter(
-                              vertices: _pendingVertices,
-                              viewport: _cachedViewport!,
-                            ),
-                            child: const SizedBox.expand(),
-                          ),
-                        ),
-
-                      if (_isEditing && _polygonEditor.viewport != null)
-                        Listener(
-                          behavior: HitTestBehavior.opaque,
-                          onPointerDown: (e) =>
-                              _polygonEditor.handlePointerDown(
-                                  e, _currentMapSize),
-                          onPointerMove: (e) {
-                            _polygonEditor.handlePointerMove(
-                                e, _currentMapSize);
-                            setState(() {});
-                          },
-                          onPointerUp: (e) async {
-                            await _polygonEditor.handlePointerUp(
-                                e, _currentMapSize);
-                            if (mounted) setState(() {});
-                          },
-                          child: CustomPaint(
-                            painter: EditOverlayPainter(
-                              vertices: _polygonEditor.editingVertices,
-                              viewport: _polygonEditor.viewport!,
-                            ),
-                            child: const SizedBox.expand(),
-                          ),
-                        ),
-                    ],
+                    ),
                   );
                 },
               ),
             ),
           ),
 
-          // Bottom controls
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
@@ -739,7 +631,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                     ElevatedButton.icon(
                       onPressed: (_layerReady &&
                               (features?.polygonCount ?? 0) > 0 &&
-                              !_isEditing &&
                               !_isDrawingPolygon)
                           ? _removeLastPolygon
                           : null,
@@ -753,7 +644,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                     ElevatedButton.icon(
                       onPressed: (_layerReady &&
                               (features?.polygonCount ?? 0) > 0 &&
-                              !_isEditing &&
                               !_isDrawingPolygon)
                           ? _clearAllPolygons
                           : null,

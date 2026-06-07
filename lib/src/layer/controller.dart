@@ -1,25 +1,41 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
-import 'package:galileo_flutter/src/galileo_map_controller.dart';
-import 'package:galileo_flutter/src/galileo_feature_editor.dart';
 import 'package:galileo_flutter/src/rust/api/galileo_api.dart' as rlib;
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:galileo_flutter/src/overlay/overlay_widget.dart';
 
-/// Have to control the layers through the controller
-/// helps in isolation of control of the layers
-/// Make it possible for a polygon to be editable, through the public api.
-/// Being editable implies that, there is a boolean field deciding if a polygon is
-/// editable or not, and if editable, there overlays a widget `PolygonOverlay` when tapped.
-/// NOTES:
-/// - The polygon overlay shall not freeze the map during its exisitence.
-/// - The polygon overlay must resized for each event occurence in the MapWidget such that the overlay size/position retains.
 
-class LayerController {
+class LayerController extends ChangeNotifier {
   final Map<String, int> _layer_names = {};
   final Map<String, FeatureEditor> _editors = {};
   final List<LayerConfig> layers;
   final int sessionId;
+  ViewportBounds? _viewportBounds;
+  ViewportBounds? get viewportBounds => _viewportBounds;
+
+  double _zoomScale = 1.0;
+  double get zoomScale => _zoomScale;
+
+  double? _initialCoordWidth;
+
+  final List<OverlayWidget> _overlays = [];
+  List<OverlayWidget> get overlays => List.unmodifiable(_overlays);
+
+  void addOverlay(OverlayWidget overlay) {
+    _overlays.add(overlay);
+    notifyListeners();
+  }
+
+  void removeOverlay(OverlayWidget overlay) {
+    if (_overlays.remove(overlay)) {
+      notifyListeners();
+    }
+  }
+
+  void clearOverlays() {
+    _overlays.clear();
+    notifyListeners();
+  }
 
   T? editorFor<T extends FeatureEditor>(String layerName) {
     final e = _editors[layerName];
@@ -28,10 +44,35 @@ class LayerController {
 
   LayerController({required this.sessionId, required this.layers});
 
+  /// Update Viewport
+  Future<void> updateViewport(MapViewport? nativeViewport) async {
+    if (nativeViewport == null) return;
+    _viewportBounds = ViewportBounds(
+      xMin: nativeViewport.xMin,
+      xMax: nativeViewport.xMax,
+      yMin: nativeViewport.yMin,
+      yMax: nativeViewport.yMax,
+    );
+
+    final width = nativeViewport.xMax - nativeViewport.xMin;
+    if (width > 0) {
+      _initialCoordWidth ??= width;
+      _zoomScale = _initialCoordWidth! / width;
+    }
+
+    notifyListeners();
+  }
+
   /// Add a layer to the map
   Future<void> addLayer(LayerConfig layer) async {
     try {
-      await rlib.addSessionLayer(sessionId: sessionId, layerConfig: layer);
+	 switch (layer){
+	 	case LayerConfig.widgetLayer:
+			
+		break;
+		default:
+		await rlib.addSessionLayer(sessionId: sessionId, layerConfig: layer);
+	 }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error adding layer: $e');
@@ -153,5 +194,6 @@ class LayerController {
       editor.dispose();
     }
     _editors.clear();
+    super.dispose();
   }
 }

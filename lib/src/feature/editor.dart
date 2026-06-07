@@ -5,8 +5,7 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
-import 'package:galileo_flutter/src/galileo_map_controller.dart';
-import 'package:galileo_flutter/src/galileo_layer_controller.dart';
+import 'package:galileo_flutter/src/layer/controller.dart';
 
 class ViewportBounds {
   final double xMin, xMax, yMin, yMax;
@@ -254,6 +253,7 @@ class CountChip extends StatelessWidget {
 class FeatureLayerManager {
   static const _pointLayerName = 'managed-points';
   static const _polygonLayerName = 'managed-polygons';
+  static const _widgetLayerName = 'managed-widgets';
 
   final LayerController layerController;
   final PolygonEditor? _polygonEditor;
@@ -377,8 +377,6 @@ class FeatureLayerManager {
     }
     _polygons.clear();
   }
-
-  /// Handling non-primitive object i.e. Flutter Widget 
 }
 
 abstract class FeatureEditor extends ChangeNotifier {

@@ -228,6 +228,9 @@ pub async fn add_session_layer(
             let layer = FeatureLayer::new(features, PointSymbol {}, Crs::EPSG3857);
             session.add_layer(layer).await;
         }
+        LayerConfig::WidgetLayer =>{
+            // Handled by flutter
+        }
     }
 
     Ok(())
@@ -359,12 +362,8 @@ pub fn handle_event_for_session(session_id: SessionID, event: UserEvent) {
     if let Some(session) = session {
         if let Some(handle) = TOKIO_HANDLE.get() {
             handle.spawn(async move {
-                match session.map.try_lock() {
-                    Ok(mut map) => {
-                        session.controller.handle(&galileo_event, &mut map);
-                    }
-                    Err(_) => info!("Map busy: {:?}", galileo_event),
-                }
+                let mut map = session.map.lock().await;
+                session.controller.handle(&galileo_event, &mut map);
             });
         }
     }

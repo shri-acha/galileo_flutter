@@ -5,15 +5,14 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:galileo_flutter/src/galileo_map_controller.dart';
+import 'package:galileo_flutter/src/map/controller.dart';
 import 'package:galileo_flutter/src/rust/api/dart_types.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:galileo_flutter/src/layer/overlay.dart';
 
 /// A widget that displays a Galileo map with interactive controls
 class GalileoMapWidget extends StatefulWidget {
   final GalileoMapController controller;
-
-  final MapSize size;
 
   final MapInitConfig config;
 
@@ -33,10 +32,12 @@ class GalileoMapWidget extends StatefulWidget {
   /// Called when the map is tapped
   final void Function(double x, double y)? onTap;
 
+  /// Fires at most once per 30 ms to avoid flooding the Rust FFI layer.
+  final void Function(MapViewport viewport)? onViewportChanged;
+
   const GalileoMapWidget._({
     super.key,
     required this.controller,
-    required this.size,
     required this.config,
     required this.layers,
     this.child,
@@ -44,13 +45,13 @@ class GalileoMapWidget extends StatefulWidget {
     this.enableKeyboard = true,
     this.focusNode,
     this.onTap,
+    this.onViewportChanged,
   });
 
   /// Create a GalileoMapWidget from an existing controller
   factory GalileoMapWidget.fromController({
     Key? key,
     required GalileoMapController controller,
-    required MapSize size,
     required MapInitConfig config,
     List<LayerConfig> layers = const [LayerConfig.osm()],
     bool autoDispose = true,
@@ -58,6 +59,7 @@ class GalileoMapWidget extends StatefulWidget {
     FocusNode? focusNode,
     Widget? child,
     void Function(double x, double y)? onTap,
+    void Function(MapViewport viewport)? onViewportChanged,
   }) {
     return GalileoMapWidget._(
       key: key,
@@ -66,7 +68,7 @@ class GalileoMapWidget extends StatefulWidget {
       enableKeyboard: enableKeyboard,
       focusNode: focusNode,
       onTap: onTap,
-      size: size,
+      onViewportChanged: onViewportChanged,
       config: config,
       layers: layers,
       child: child,
@@ -119,6 +121,36 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
   bool _isPinchScaling = false;
 
   final Set<int> _activePointers = {};
+
+  /// Lock flags to ensure only one FFI call to getViewport is active at any time.
+  bool _isFetchingViewport = false;
+  bool _needsViewportUpdate = false;
+
+  /// Fetch the current viewport from Rust and emit it to [onViewportChanged].
+  /// Non-blocking/locked: starts the FFI call immediately, and queues at most one
+  /// subsequent update if another request comes in while the FFI call is active.
+  void _scheduleViewportUpdate() {
+    if (widget.onViewportChanged == null) return;
+    if (_isFetchingViewport) {
+      _needsViewportUpdate = true;
+      return;
+    }
+
+    _isFetchingViewport = true;
+    _needsViewportUpdate = false;
+
+    widget.controller.getViewport().then((vp) {
+      _isFetchingViewport = false;
+      if (vp != null && mounted) {
+        widget.onViewportChanged!(vp);
+      }
+      if (_needsViewportUpdate && mounted) {
+        _scheduleViewportUpdate();
+      }
+    }).catchError((e) {
+      _isFetchingViewport = false;
+    });
+  }
 
   double get _devicePixelRatio {
     return MediaQuery.of(context).devicePixelRatio;
@@ -177,6 +209,8 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
     if (_panAccumulatedDelta != Offset.zero) {
       _sendPanEvent(_panAccumulatedDelta, _lastPointerPosition!);
       _panAccumulatedDelta = Offset.zero;
+      // Schedule a viewport fetch so overlay widgets track the pan in real time.
+      _scheduleViewportUpdate();
     }
   }
 
@@ -226,6 +260,16 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
       children: [
         // The actual map texture
         Positioned.fill(child: Texture(textureId: textureId)),
+        // Geo-anchored widgets from LayerController
+        ListenableBuilder(
+          listenable: widget.controller.layer_controller,
+          builder: (context, _) {
+            return MapOverlayLayer(
+              controller: widget.controller.layer_controller,
+              overlays: widget.controller.layer_controller.overlays,
+            );
+          },
+        ),
         // Optional child widget overlay
         if (widget.child != null) widget.child!,
       ],
@@ -281,6 +325,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
           final zoomFactor =
               math.pow(1.0 - zoomSensitivity, -event.scrollDelta.dy).toDouble();
           _sendZoomEvent(zoomFactor, event.localPosition);
+          _scheduleViewportUpdate();
         }
       },
       onPointerMove: (event) {
@@ -332,6 +377,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
                 math.pow(scaleDelta, zoomSensitivity).toDouble();
             _lastPinchScaleValue = details.scale;
             _sendZoomEvent(1.0 / amplifiedDelta, details.localFocalPoint);
+            _scheduleViewportUpdate();
           }
         }
       },
@@ -545,7 +591,7 @@ class _GalileoMapFromConfig extends StatefulWidget {
   final FocusNode? focusNode;
   final void Function(double x, double y)? onTap;
 
-  /// Called when the map is tappedinal FocusNode? focusNode;
+  /// Called when the map is tapped
   final void Function(MapViewport viewport)? onViewportChanged;
 
   const _GalileoMapFromConfig({
@@ -608,7 +654,6 @@ class _GalileoMapFromConfigState extends State<_GalileoMapFromConfig> {
 
         return GalileoMapWidget._(
           controller: controller!,
-          size: widget.size,
           config: widget.config,
           layers: widget.layers,
           autoDispose: widget.autoDispose,

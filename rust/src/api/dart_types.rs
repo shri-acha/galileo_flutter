@@ -86,11 +86,12 @@ pub enum LayerConfig {
         /// Stores the Polygon features to be rendered
         features: Vec<Polygon>,
     },
-
     PointLayer {
         /// Stores the Point features to be rendered
         features: Vec<Point>,
     },
+    ///Placeholder variant for flutter based widgets layer
+    WidgetLayer,
 }
 
 /// Closed geographic polygon with fill/stroke styling.
