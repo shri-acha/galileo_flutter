@@ -7,16 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 import 'package:galileo_flutter/src/layer/controller.dart';
 
-class ViewportBounds {
-  final double xMin, xMax, yMin, yMax;
-  const ViewportBounds({
-    required this.xMin,
-    required this.xMax,
-    required this.yMin,
-    required this.yMax,
-  });
-}
-
 abstract final class MapProjection {
   static const double _r = 6378137.0;
 
@@ -51,6 +41,16 @@ abstract final class MapProjection {
     final my = vp.yMax - (pos.dy / size.height) * (vp.yMax - vp.yMin);
     return mercatorToLatLon(mx, my);
   }
+}
+
+class ViewportBounds {
+  final double xMin, xMax, yMin, yMax;
+  const ViewportBounds({
+    required this.xMin,
+    required this.xMax,
+    required this.yMin,
+    required this.yMax,
+  });
 }
 
 class EditOverlayPainter extends CustomPainter {

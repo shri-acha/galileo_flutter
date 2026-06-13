@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:galileo_flutter/src/feature/editor.dart';
+import 'package:galileo_flutter/src/feature/edit_controller.dart';
 import 'package:galileo_flutter/src/overlay/polygon_draw_controller.dart';
 
 /// Overlay widget for drawing a new polygon.
@@ -72,12 +72,12 @@ class _PolygonDrawOverlayState extends State<PolygonDrawOverlay> {
 
 /// Overlay widget for editing an existing polygon.
 ///
-/// Delegates pointer events to [PolygonEditor] for vertex drag, delete,
+/// Delegates pointer events to [PolygonEditController] for vertex drag, delete,
 /// and midpoint insertion. Renders via [EditOverlayPainter].
 ///
 /// Place this as a child in a [Stack] that covers the map area.
 class PolygonEditOverlay extends StatelessWidget {
-  final PolygonEditor? editor;
+  final PolygonEditController? editor;
 
   /// Called after any pointer event so the parent can call `setState`.
   final VoidCallback? onChanged;

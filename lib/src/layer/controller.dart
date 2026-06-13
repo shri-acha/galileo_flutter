@@ -7,7 +7,7 @@ import 'package:galileo_flutter/src/overlay/overlay_widget.dart';
 
 class LayerController extends ChangeNotifier {
   final Map<String, int> _layer_names = {};
-  final Map<String, FeatureEditor> _editors = {};
+  final Map<String, FeatureEditController> _editors = {};
   final List<LayerConfig> layers;
   final int sessionId;
   ViewportBounds? _viewportBounds;
@@ -37,7 +37,7 @@ class LayerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  T? editorFor<T extends FeatureEditor>(String layerName) {
+  T? editorFor<T extends FeatureEditController>(String layerName) {
     final e = _editors[layerName];
     return e is T ? e : null;
   }
@@ -66,13 +66,12 @@ class LayerController extends ChangeNotifier {
   /// Add a layer to the map
   Future<void> addLayer(LayerConfig layer) async {
     try {
-	 switch (layer){
-	 	case LayerConfig.widgetLayer:
-			
-		break;
-		default:
-		await rlib.addSessionLayer(sessionId: sessionId, layerConfig: layer);
-	 }
+   await layer.maybeWhen(
+      widgetLayer: () async {},
+      orElse: () async {
+        await rlib.addSessionLayer(sessionId: sessionId, layerConfig: layer);
+      },
+    );
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error adding layer: $e');
@@ -102,7 +101,7 @@ class LayerController extends ChangeNotifier {
   Future<int?> addPolygonFeatureLayer(
     String name, {
     List<Polygon> initialPolygons = const [],
-    PolygonEditor? editor,
+    PolygonEditController? editor,
   }) async {
     try {
       final id = await rlib.addPolygonFeatureLayer(

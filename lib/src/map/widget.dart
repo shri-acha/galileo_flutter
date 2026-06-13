@@ -429,98 +429,34 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
     return false;
   }
 
-  _handleKeyNavigation(LogicalKeyboardKey key) {
-    switch (key) {
-      case LogicalKeyboardKey.arrowUp:
-        // Pan up using drag event
-        final centerX = widget.controller.size.width / 2;
-        final centerY = widget.controller.size.height / 2;
-        final userEvent = UserEvent.drag(
-          MouseButton.left,
-          const Vector2(dx: 0, dy: 20),
-          MouseEvent(
-            screenPointerPosition: Point2(x: centerX, y: centerY),
-            buttons: const MouseButtonsState(
-              left: MouseButtonState.pressed,
-              middle: MouseButtonState.released,
-              right: MouseButtonState.released,
-            ),
-          ),
-        );
-        widget.controller.handleEvent(userEvent);
-        break;
-      case LogicalKeyboardKey.arrowDown:
-        // Pan down using drag event
-        final centerX = widget.controller.size.width / 2;
-        final centerY = widget.controller.size.height / 2;
-        final userEvent = UserEvent.drag(
-          MouseButton.left,
-          const Vector2(dx: 0, dy: -20),
-          MouseEvent(
-            screenPointerPosition: Point2(x: centerX, y: centerY),
-            buttons: const MouseButtonsState(
-              left: MouseButtonState.pressed,
-              middle: MouseButtonState.released,
-              right: MouseButtonState.released,
-            ),
-          ),
-        );
-        widget.controller.handleEvent(userEvent);
-        break;
-      case LogicalKeyboardKey.arrowLeft:
-        // Pan left using drag event
-        final centerX = widget.controller.size.width / 2;
-        final centerY = widget.controller.size.height / 2;
-        final userEvent = UserEvent.drag(
-          MouseButton.left,
-          const Vector2(dx: 20, dy: 0),
-          MouseEvent(
-            screenPointerPosition: Point2(x: centerX, y: centerY),
-            buttons: const MouseButtonsState(
-              left: MouseButtonState.pressed,
-              middle: MouseButtonState.released,
-              right: MouseButtonState.released,
-            ),
-          ),
-        );
-        widget.controller.handleEvent(userEvent);
-        break;
-      case LogicalKeyboardKey.arrowRight:
-        // Pan right using drag event
-        final centerX = widget.controller.size.width / 2;
-        final centerY = widget.controller.size.height / 2;
-        final userEvent = UserEvent.drag(
-          MouseButton.left,
-          const Vector2(dx: -20, dy: 0),
-          MouseEvent(
-            screenPointerPosition: Point2(x: centerX, y: centerY),
-            buttons: const MouseButtonsState(
-              left: MouseButtonState.pressed,
-              middle: MouseButtonState.released,
-              right: MouseButtonState.released,
-            ),
-          ),
-        );
-        widget.controller.handleEvent(userEvent);
-        break;
-      case LogicalKeyboardKey.equal:
-      case LogicalKeyboardKey.numpadAdd:
-        // Zoom in
-        final centerX = widget.controller.size.width / 2;
-        final centerY = widget.controller.size.height / 2;
-        final userEvent = UserEvent.zoom(0.9, Point2(x: centerX, y: centerY));
-        widget.controller.handleEvent(userEvent);
-        break;
-      case LogicalKeyboardKey.minus:
-      case LogicalKeyboardKey.numpadSubtract:
-        // Zoom out
-        final centerX = widget.controller.size.width / 2;
-        final centerY = widget.controller.size.height / 2;
-        final userEvent = UserEvent.zoom(1.1, Point2(x: centerX, y: centerY));
-        widget.controller.handleEvent(userEvent);
-        break;
-    }
+_handleKeyNavigation(LogicalKeyboardKey key) {
+  final centerX = widget.controller.size.width / _devicePixelRatio / 2;
+  final centerY = widget.controller.size.height / _devicePixelRatio / 2;
+  final center = Offset(centerX, centerY);
+  const step = 20.0;
+
+  switch (key) {
+    case LogicalKeyboardKey.arrowUp:
+      _sendPanEvent(const Offset(0, step), center);
+    case LogicalKeyboardKey.arrowDown:
+      _sendPanEvent(const Offset(0, -step), center);
+    case LogicalKeyboardKey.arrowLeft:
+      _sendPanEvent(const Offset(step, 0), center);
+    case LogicalKeyboardKey.arrowRight:
+      _sendPanEvent(const Offset(-step, 0), center);
+    case LogicalKeyboardKey.equal:
+    case LogicalKeyboardKey.numpadAdd:
+      widget.controller.handleEvent(
+        UserEvent.zoom(0.9, Point2(x: centerX * _devicePixelRatio, y: centerY * _devicePixelRatio)),
+      );
+    case LogicalKeyboardKey.minus:
+    case LogicalKeyboardKey.numpadSubtract:
+      widget.controller.handleEvent(
+        UserEvent.zoom(1.1, Point2(x: centerX * _devicePixelRatio, y: centerY * _devicePixelRatio)),
+      );
   }
+  _scheduleViewportUpdate();
+}
 
   @override
   Widget build(BuildContext context) {

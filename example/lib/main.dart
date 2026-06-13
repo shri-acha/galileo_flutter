@@ -140,7 +140,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
 
    final manager = FeatureLayerManager(
      layerController: ctrl.layer_controller,
-     polygonEditor:   null,
+     polygonEditController:   null,
    );
    await manager.initialize();
 
