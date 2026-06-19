@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 import 'dart:ui' as ui;
-import 'package:latlong2/latlong.dart';
 
 const MAP_TILER_API_KEY = '';
 const MAP_TILER_URL_TEMPLATE =
@@ -158,7 +157,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
 
     ctrl.layer_controller.addOverlay(
       OverlayWidget(
-		  loc: GeoLocation(latitude: 0.0,longitude: 0.0),
+		  loc: const GeoLocation(latitude: 0.0,longitude: 0.0),
         width: 200,
         height: 150,
         type: OverlayType.static,

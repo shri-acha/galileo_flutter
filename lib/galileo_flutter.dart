@@ -31,7 +31,6 @@ export 'package:galileo_flutter/src/overlay/polygon_draw_controller.dart';
 export 'package:galileo_flutter/src/overlay/overlay_polygon.dart';
 export 'package:galileo_flutter/src/layer/controller.dart';
 export 'package:galileo_flutter/src/feature/edit_controller.dart';
-export 'package:galileo_flutter/src/types/config.dart';
 
 Future<void> initGalileo({String? cachePath}) async {
   await rlib_gen.RustLib.init();

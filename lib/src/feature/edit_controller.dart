@@ -466,10 +466,17 @@ class PolygonEditController extends FeatureEditController {
   Future<void> _insertVertexAfterEdge(int edgeIndex) async {
     final a = _editingVertices[edgeIndex];
     final b = _editingVertices[(edgeIndex + 1) % _editingVertices.length];
+
+    double midLng = (a.longitude + b.longitude) / 2;
+    if ((a.longitude - b.longitude).abs() > 180) {
+      midLng = (midLng + 180) % 360;
+      if (midLng > 180) midLng -= 360;
+    }
     final mid = GeoLocation(
       latitude: (a.latitude + b.latitude) / 2,
-      longitude: (a.longitude + b.longitude) / 2,
+      longitude: midLng,
     );
+
     _editingVertices.insert(edgeIndex + 1, mid);
     notifyListeners();
     await _commitEdits();

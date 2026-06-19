@@ -21,15 +21,17 @@ pub struct ScreenLocation {
 
 const R : f64= 6378137.0;
 
-  fn lat_lon_to_mercator(lat: f64,lon:f64)->(f64,f64){
-    ( lon * (f64::consts::PI / 180.0) * R,
-    f64::ln(f64::tan(f64::consts::PI / 4.0 + lat * (f64::consts::PI / 180.0) / 2.0)) * R
-    )
+  fn lat_lon_to_mercator(lat: f64, lon: f64) -> (f64, f64) {
+    let lat_rad = lat.to_radians();
+    let x = lon.to_radians() * R;
+    let y = (std::f64::consts::FRAC_PI_4 + lat_rad / 2.0).tan().ln() * R;
+    (x, y)
   }
 
-  fn mercator_to_lat_lon(x: f64,y:f64)->(f64,f64){
-      ((2.0 * f64::atan(f64::exp(y / R)) - f64::consts::PI / 2.0) * (180.0 / f64::consts::PI),
-    (x / R) * (180.0 / f64::consts::PI))
+  fn mercator_to_lat_lon(x: f64, y: f64) -> (f64, f64) {
+    let lat = (2.0 * (y / R).exp().atan() - std::f64::consts::FRAC_PI_2).to_degrees();
+    let lon = (x / R).to_degrees();
+    (lat, lon)
   }
 
 #[frb(dart_code = r#"
@@ -45,9 +47,11 @@ impl GeoLocation {
         vp:MapViewport,
       )-> ScreenLocation{
         let (mx, my) = lat_lon_to_mercator(self.latitude, self.longitude);
+        let dx = vp.x_max - vp.x_min;
+        let dy = vp.y_max - vp.y_min;
         ScreenLocation {
-          x: (mx - vp.x_min) / (vp.x_max - vp.x_min) * width,
-          y: (vp.y_max - my) / (vp.y_max - vp.y_min) * height,
+          x: if dx == 0.0 { 0.0 } else { (mx - vp.x_min) / dx * width },
+          y: if dy == 0.0 { 0.0 } else { (vp.y_max - my) / dy * height },
         }
       }
 }
@@ -59,8 +63,8 @@ impl ScreenLocation {
 
     #[frb(sync)]
     pub fn to_geographical(self,vp: MapViewport,  height: f64, width: f64 )->GeoLocation{
-    let mx = vp.x_min + (self.x / width) * (vp.x_max - vp.x_min);
-    let my = vp.y_max - (self.y / height) * (vp.y_max - vp.y_min);
+    let mx = vp.x_min + if width == 0.0 { 0.0 } else { (self.x / width) * (vp.x_max - vp.x_min) };
+    let my = vp.y_max - if height == 0.0 { 0.0 } else { (self.y / height) * (vp.y_max - vp.y_min) };
     let (lat,lng) = mercator_to_lat_lon(mx, my);
     GeoLocation { latitude: lat, longitude: lng }
     }
