@@ -7,33 +7,6 @@ use std::f64;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 /// Geographic position with latitude and longitude coordinates.
-pub struct GeoLocation {
-    pub latitude: f64,
-    pub longitude: f64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-/// Flutter/Screen with x and y coordinates.
-pub struct ScreenLocation {
-    pub x: f64,
-    pub y: f64,
-}
-
-const R: f64 = 6378137.0;
-
-fn lat_lon_to_mercator(lat: f64, lon: f64) -> (f64, f64) {
-    let lat_rad = lat.to_radians();
-    let x = lon.to_radians() * R;
-    let y = (std::f64::consts::FRAC_PI_4 + lat_rad / 2.0).tan().ln() * R;
-    (x, y)
-}
-
-fn mercator_to_lat_lon(x: f64, y: f64) -> (f64, f64) {
-    let lat = (2.0 * (y / R).exp().atan() - std::f64::consts::FRAC_PI_2).to_degrees();
-    let lon = (x / R).to_degrees();
-    (lat, lon)
-}
-
 #[frb(dart_code = r#"
   GeoLocation operator +(GeoLocation other) {
     double newLat = this.latitude + other.latitude;
@@ -65,6 +38,37 @@ fn mercator_to_lat_lon(x: f64, y: f64) -> (f64, f64) {
     return GeoLocation(latitude: lat, longitude: lng);
   }
 "#)]
+pub struct GeoLocation {
+    pub latitude: f64,
+    pub longitude: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+/// Flutter/Screen with x and y coordinates.
+#[frb(dart_code = r#"
+  ScreenLocation operator +(ScreenLocation other) => ScreenLocation(x: x + other.x, y: y + other.y);
+  ScreenLocation operator -(ScreenLocation other) => ScreenLocation(x: x - other.x, y: y - other.y);
+"#)]
+pub struct ScreenLocation {
+    pub x: f64,
+    pub y: f64,
+}
+
+const R: f64 = 6378137.0;
+
+fn lat_lon_to_mercator(lat: f64, lon: f64) -> (f64, f64) {
+    let lat_rad = lat.to_radians();
+    let x = lon.to_radians() * R;
+    let y = (std::f64::consts::FRAC_PI_4 + lat_rad / 2.0).tan().ln() * R;
+    (x, y)
+}
+
+fn mercator_to_lat_lon(x: f64, y: f64) -> (f64, f64) {
+    let lat = (2.0 * (y / R).exp().atan() - std::f64::consts::FRAC_PI_2).to_degrees();
+    let lon = (x / R).to_degrees();
+    (lat, lon)
+}
+
 impl GeoLocation {
     #[frb(sync)]
     pub fn to_screen(self, height: f64, width: f64, vp: MapViewport) -> ScreenLocation {
@@ -86,10 +90,6 @@ impl GeoLocation {
     }
 }
 
-#[frb(dart_code = r#"
-  ScreenLocation operator +(ScreenLocation other) => ScreenLocation(x: x + other.x, y: y + other.y);
-  ScreenLocation operator -(ScreenLocation other) => ScreenLocation(x: x - other.x, y: y - other.y);
-"#)]
 impl ScreenLocation {
     #[frb(sync)]
     pub fn to_geographical(self, vp: MapViewport, height: f64, width: f64) -> GeoLocation {

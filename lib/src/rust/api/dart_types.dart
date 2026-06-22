@@ -61,6 +61,36 @@ class GeoLocation {
     vp: vp,
   );
 
+  GeoLocation operator +(GeoLocation other) {
+    double newLat = latitude + other.latitude;
+    double newLng = longitude + other.longitude;
+    return _normalize(newLat, newLng);
+  }
+
+  GeoLocation operator -(GeoLocation other) {
+    double newLat = latitude - other.latitude;
+    double newLng = longitude - other.longitude;
+    return _normalize(newLat, newLng);
+  }
+
+  static GeoLocation _normalize(double lat, double lng) {
+    while (lat > 90.0 || lat < -90.0) {
+      if (lat > 90.0) {
+        lat = 180.0 - lat;
+        lng += 180.0;
+      } else if (lat < -90.0) {
+        lat = -180.0 - lat;
+        lng += 180.0;
+      }
+    }
+
+    double shiftLng = lng + 180.0;
+    double wrappedLng = (shiftLng % 360.0 + 360.0) % 360.0;
+    lng = wrappedLng - 180.0;
+
+    return GeoLocation(latitude: lat, longitude: lng);
+  }
+
   @override
   int get hashCode => latitude.hashCode ^ longitude.hashCode;
 
@@ -423,6 +453,11 @@ class ScreenLocation {
     height: height,
     width: width,
   );
+
+  ScreenLocation operator +(ScreenLocation other) =>
+      ScreenLocation(x: x + other.x, y: y + other.y);
+  ScreenLocation operator -(ScreenLocation other) =>
+      ScreenLocation(x: x - other.x, y: y - other.y);
 
   @override
   int get hashCode => x.hashCode ^ y.hashCode;

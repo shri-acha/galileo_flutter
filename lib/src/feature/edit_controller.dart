@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
@@ -460,6 +459,7 @@ class PolygonEditController extends FeatureEditController {
   }
 
   Future<void> _insertVertexAfterEdge(int edgeIndex) async {
+  /// TODO
     final a = _editingVertices[edgeIndex];
     final b = _editingVertices[(edgeIndex + 1) % _editingVertices.length];
 
