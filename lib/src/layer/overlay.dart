@@ -1,9 +1,9 @@
 import 'package:galileo_flutter/src/overlay/overlay_widget.dart';
 import 'package:galileo_flutter/src/layer/controller.dart';
-import 'package:galileo_flutter/src/feature/edit_controller.dart';
 import 'package:galileo_flutter/src/rust/api/dart_types.dart';
 
 import 'package:flutter/widgets.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 class MapOverlayLayer extends StatelessWidget {
   final LayerController controller;
@@ -38,7 +38,7 @@ class MapOverlayFlowDelegate extends FlowDelegate {
   final LayerController controller;
   final Size mapSize;
   final List<OverlayWidget> overlays;
-  final ViewportBounds? viewportBounds;
+  final MapViewport? viewportBounds;
   final double zoomScale;
 
   MapOverlayFlowDelegate({
@@ -66,10 +66,10 @@ class MapOverlayFlowDelegate extends FlowDelegate {
       final childSize =
           context.getChildSize(i) ?? Size(overlay.width, overlay.height);
 
-      final screenPos = MapProjection.latLonToScreen(
-        (overlay.lat, overlay.lon),
-        mapSize,
-        vp,
+      final screenPos = overlay.loc.toScreen(
+        height: mapSize.height,
+        width: mapSize.width,
+        vp: vp,
       );
 
       final transformMatrix = Matrix4.identity();
@@ -77,9 +77,12 @@ class MapOverlayFlowDelegate extends FlowDelegate {
       switch (overlay.type) {
         // Retains its exact pixel dimension profile regardless of map scaling changes
         case OverlayType.static:
-          transformMatrix.translate(
-            screenPos.dx - (childSize.width / 2),
-            screenPos.dy - (childSize.height / 2),
+          transformMatrix.translateByVector3(
+            Vector3(
+              screenPos.x - (childSize.width / 2),
+              screenPos.y - (childSize.height / 2),
+              0,
+            ),
           );
           break;
 
@@ -87,13 +90,14 @@ class MapOverlayFlowDelegate extends FlowDelegate {
         case OverlayType.relative:
           final scale = controller.zoomScale;
 
-          transformMatrix.translate(screenPos.dx, screenPos.dy);
+          transformMatrix.translateByVector3(
+            Vector3(screenPos.x, screenPos.y, 0),
+          );
 
-          transformMatrix.scale(scale);
+          transformMatrix.scaleByVector3(Vector3(scale, 1, 1));
 
-          transformMatrix.translate(
-            -childSize.width / 2,
-            -childSize.height / 2,
+          transformMatrix.translateByVector3(
+            Vector3(-childSize.width / 2, -childSize.height / 2, 0),
           );
           break;
       }

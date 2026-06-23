@@ -8,22 +8,26 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'dart_types.freezed.dart';
 
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `MapPosition`, `Point3`, `PointSymbol`, `PolygonSymbol`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `lat_lon_to_mercator`, `mercator_to_lat_lon`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `Point3`, `PointSymbol`, `PolygonSymbol`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from_rect`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`, `to_galileo`
 
-class Color {
+class GalileoColor {
   final double r;
   final double g;
   final double b;
   final double a;
 
-  const Color({
+  const GalileoColor({
     required this.r,
     required this.g,
     required this.b,
     required this.a,
   });
+
+  static Future<GalileoColor> default_() =>
+      RustLib.instance.api.crateApiDartTypesGalileoColorDefault();
 
   @override
   int get hashCode => r.hashCode ^ g.hashCode ^ b.hashCode ^ a.hashCode;
@@ -31,12 +35,72 @@ class Color {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Color &&
+      other is GalileoColor &&
           runtimeType == other.runtimeType &&
           r == other.r &&
           g == other.g &&
           b == other.b &&
           a == other.a;
+}
+
+/// Geographic position with latitude and longitude coordinates.
+class GeoLocation {
+  final double latitude;
+  final double longitude;
+
+  const GeoLocation({required this.latitude, required this.longitude});
+
+  ScreenLocation toScreen({
+    required double height,
+    required double width,
+    required MapViewport vp,
+  }) => RustLib.instance.api.crateApiDartTypesGeoLocationToScreen(
+    that: this,
+    height: height,
+    width: width,
+    vp: vp,
+  );
+
+  GeoLocation operator +(GeoLocation other) {
+    double newLat = latitude + other.latitude;
+    double newLng = longitude + other.longitude;
+    return _normalize(newLat, newLng);
+  }
+
+  GeoLocation operator -(GeoLocation other) {
+    double newLat = latitude - other.latitude;
+    double newLng = longitude - other.longitude;
+    return _normalize(newLat, newLng);
+  }
+
+  static GeoLocation _normalize(double lat, double lng) {
+    while (lat > 90.0 || lat < -90.0) {
+      if (lat > 90.0) {
+        lat = 180.0 - lat;
+        lng += 180.0;
+      } else if (lat < -90.0) {
+        lat = -180.0 - lat;
+        lng += 180.0;
+      }
+    }
+
+    double shiftLng = lng + 180.0;
+    double wrappedLng = (shiftLng % 360.0 + 360.0) % 360.0;
+    lng = wrappedLng - 180.0;
+
+    return GeoLocation(latitude: lat, longitude: lng);
+  }
+
+  @override
+  int get hashCode => latitude.hashCode ^ longitude.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GeoLocation &&
+          runtimeType == other.runtimeType &&
+          latitude == other.latitude &&
+          longitude == other.longitude;
 }
 
 @freezed
@@ -72,7 +136,7 @@ sealed class LayerConfig with _$LayerConfig {
 }
 
 class MapInitConfig {
-  final (double, double) latlon;
+  final GeoLocation latlon;
   final int zoomLevel;
   final MapSize mapSize;
 
@@ -81,7 +145,7 @@ class MapInitConfig {
   final bool enableMultisampling;
 
   /// Background color as RGBA (0.0-1.0 range)
-  final (double, double, double, double) backgroundColor;
+  final GalileoColor backgroundColor;
 
   const MapInitConfig({
     required this.latlon,
@@ -90,9 +154,6 @@ class MapInitConfig {
     required this.enableMultisampling,
     required this.backgroundColor,
   });
-
-  static Future<MapInitConfig> default_() =>
-      RustLib.instance.api.crateApiDartTypesMapInitConfigDefault();
 
   @override
   int get hashCode =>
@@ -246,12 +307,12 @@ class MouseEvent {
 ///   Point(
 ///     coordinate: (27.7,85.3),
 ///     style: PointStyle(
-///       fillColor: (0.2,0.5,0.9,0.8),
+///       fillColor: GalileoColor(0.2,0.5,0.9,0.8),
 ///       size: 0.8,
 ///     ),
 ///   )
 class Point {
-  final (double, double) coordinate;
+  final GeoLocation coordinate;
   final PointStyle style;
 
   const Point({required this.coordinate, required this.style});
@@ -288,7 +349,7 @@ class Point2 {
 }
 
 class PointStyle {
-  final Color fillColor;
+  final GalileoColor fillColor;
   final double size;
 
   const PointStyle({required this.fillColor, required this.size});
@@ -310,14 +371,14 @@ class PointStyle {
 ///   Polygon(
 ///     points: [(27.7,85.3), ...],
 ///     style: PolygonStyle(
-///       fillColor: Color(0.2,0.5,0.9,0.8),
-///       strokeColor: Color(1.0,1.0,1.0,1.0),
+///       fillColor: GalileoColor(0.2,0.5,0.9,0.8),
+///       strokeColor: GalileoColor(1.0,1.0,1.0,1.0),
 ///       strokeWidth: 2.0,
 ///       strokeOffset: 0.0,
 ///     ),
 ///   )
 class Polygon {
-  final List<(double, double)> points;
+  final List<GeoLocation> points;
   final PolygonStyle style;
 
   const Polygon({required this.points, required this.style});
@@ -336,10 +397,10 @@ class Polygon {
 
 class PolygonStyle {
   /// fillColor also as RGBA (0.0-1.0 range)
-  final Color fillColor;
+  final GalileoColor fillColor;
 
   /// fillColor also as RGBA (0.0-1.0 range)
-  final Color strokeColor;
+  final GalileoColor strokeColor;
 
   /// strokeWidth with (0.0-1.0 range)
   final double strokeWidth;
@@ -353,6 +414,9 @@ class PolygonStyle {
     required this.strokeWidth,
     required this.strokeOffset,
   });
+
+  static Future<PolygonStyle> default_() =>
+      RustLib.instance.api.crateApiDartTypesPolygonStyleDefault();
 
   @override
   int get hashCode =>
@@ -370,6 +434,41 @@ class PolygonStyle {
           strokeColor == other.strokeColor &&
           strokeWidth == other.strokeWidth &&
           strokeOffset == other.strokeOffset;
+}
+
+/// Flutter/Screen with x and y coordinates.
+class ScreenLocation {
+  final double x;
+  final double y;
+
+  const ScreenLocation({required this.x, required this.y});
+
+  GeoLocation toGeographical({
+    required MapViewport vp,
+    required double height,
+    required double width,
+  }) => RustLib.instance.api.crateApiDartTypesScreenLocationToGeographical(
+    that: this,
+    vp: vp,
+    height: height,
+    width: width,
+  );
+
+  ScreenLocation operator +(ScreenLocation other) =>
+      ScreenLocation(x: x + other.x, y: y + other.y);
+  ScreenLocation operator -(ScreenLocation other) =>
+      ScreenLocation(x: x - other.x, y: y - other.y);
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ScreenLocation &&
+          runtimeType == other.runtimeType &&
+          x == other.x &&
+          y == other.y;
 }
 
 @freezed

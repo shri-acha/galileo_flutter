@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
-import 'package:galileo_flutter/src/feature/edit_controller.dart';
 
 /// Controller that manages the pending-vertex state for drawing a new polygon.
 ///
@@ -8,17 +7,16 @@ import 'package:galileo_flutter/src/feature/edit_controller.dart';
 /// Listeners are notified on every state change so overlays and toolbars
 /// can rebuild.
 class PolygonDrawController extends ChangeNotifier {
-  final LayerController _layer_controller;
+  final LayerController _layerController;
   final FeatureLayerManager _features;
 
-  List<(double, double)> _pendingVertices = [];
+  List<GeoLocation> _pendingVertices = [];
 
   /// Layer controller
-  LayerController get layer_controller => _layer_controller;
+  LayerController get layerController => _layerController;
 
   /// Unmodifiable view of the vertices placed so far.
-  List<(double, double)> get pendingVertices =>
-      List.unmodifiable(_pendingVertices);
+  List<GeoLocation> get pendingVertices => List.unmodifiable(_pendingVertices);
 
   /// Whether a draw session is in progress (at least one vertex placed).
   bool get isDrawing => _pendingVertices.isNotEmpty;
@@ -33,11 +31,11 @@ class PolygonDrawController extends ChangeNotifier {
   String _statusMessage = '';
   String get statusMessage => _statusMessage;
 
-  PolygonDrawController(this._features, this._layer_controller);
+  PolygonDrawController(this._features, this._layerController);
 
   /// Add a vertex at the given lat/lon.
-  void addVertex(double lat, double lon) {
-    _pendingVertices.add((lat, lon));
+  void addVertex(GeoLocation loc) {
+    _pendingVertices.add(loc);
     final n = _pendingVertices.length;
     _statusMessage =
         n < 3
@@ -69,17 +67,10 @@ class PolygonDrawController extends ChangeNotifier {
 
   /// [style] defaults to a blue fill with white stroke if not provided.
   /// Returns silently if fewer than 3 vertices have been placed.
-  Future<void> finish({PolygonStyle? style}) async {
+  Future<void> finish(PolygonStyle style) async {
     if (_pendingVertices.length < 3) return;
 
-    final effectiveStyle =
-        style ??
-        const PolygonStyle(
-          fillColor: Color(r: 0.2, g: 0.5, b: 0.9, a: 0.8),
-          strokeColor: Color(r: 1.0, g: 1.0, b: 1.0, a: 1.0),
-          strokeWidth: 2.0,
-          strokeOffset: 0.0,
-        );
+    final effectiveStyle = style;
 
     await _features.addPolygon(
       Polygon(points: List.from(_pendingVertices), style: effectiveStyle),

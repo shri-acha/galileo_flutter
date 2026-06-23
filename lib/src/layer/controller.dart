@@ -2,15 +2,14 @@ import 'package:flutter/widgets.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 import 'package:galileo_flutter/src/rust/api/galileo_api.dart' as rlib;
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
-import 'package:galileo_flutter/src/overlay/overlay_widget.dart';
 
 class LayerController extends ChangeNotifier {
-  final Map<String, int> _layer_names = {};
+  final Map<String, int> _layerNames = {};
   final Map<String, FeatureEditController> _editors = {};
   final List<LayerConfig> layers;
   final int sessionId;
-  ViewportBounds? _viewportBounds;
-  ViewportBounds? get viewportBounds => _viewportBounds;
+  MapViewport? _viewportBounds;
+  MapViewport? get viewportBounds => _viewportBounds;
 
   double _zoomScale = 1.0;
   double get zoomScale => _zoomScale;
@@ -46,7 +45,7 @@ class LayerController extends ChangeNotifier {
   /// Update Viewport
   Future<void> updateViewport(MapViewport? nativeViewport) async {
     if (nativeViewport == null) return;
-    _viewportBounds = ViewportBounds(
+    _viewportBounds = MapViewport(
       xMin: nativeViewport.xMin,
       xMax: nativeViewport.xMax,
       yMin: nativeViewport.yMin,
@@ -88,7 +87,7 @@ class LayerController extends ChangeNotifier {
         sessionId: sessionId,
         initialPoints: initialPoints,
       );
-      _layer_names[name] = id;
+      _layerNames[name] = id;
       return id;
     } catch (e) {
       if (kDebugMode) debugPrint('Error creating point layer "$name": $e');
@@ -107,7 +106,7 @@ class LayerController extends ChangeNotifier {
         sessionId: sessionId,
         initialPolygons: initialPolygons,
       );
-      _layer_names[name] = id;
+      _layerNames[name] = id;
 
       if (editor != null) {
         _editors[name] = editor;
@@ -121,7 +120,7 @@ class LayerController extends ChangeNotifier {
   }
 
   Future<int> addPointToLayer(String layerName, Point point) async {
-    final id = _layer_names[layerName];
+    final id = _layerNames[layerName];
     if (id == null) {
       if (kDebugMode) debugPrint('No point layer named "$layerName"');
       return -1;
@@ -139,7 +138,7 @@ class LayerController extends ChangeNotifier {
   }
 
   Future<bool> removePointFromLayer(String layerName, int index) async {
-    final id = _layer_names[layerName];
+    final id = _layerNames[layerName];
     if (id == null) return false;
     try {
       return await rlib.removePointFromLayer(
@@ -154,7 +153,7 @@ class LayerController extends ChangeNotifier {
   }
 
   Future<int> addPolygonToLayer(String layerName, Polygon polygon) async {
-    final id = _layer_names[layerName];
+    final id = _layerNames[layerName];
     if (id == null) {
       if (kDebugMode) debugPrint('No point layer named "$layerName"');
       return -1;
@@ -172,7 +171,7 @@ class LayerController extends ChangeNotifier {
   }
 
   Future<bool> removePolygonFromLayer(String layerName, int index) async {
-    final id = _layer_names[layerName];
+    final id = _layerNames[layerName];
     if (id == null) return false;
     try {
       return await rlib.removePolygonFromLayer(

@@ -3,17 +3,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
-import 'dart:ui' as ui;
 
 const MAP_TILER_API_KEY = '';
 const MAP_TILER_URL_TEMPLATE =
     'https://api.maptiler.com/tiles/v3-openmaptiles/{z}/{x}/{y}.pbf?key=$MAP_TILER_API_KEY';
 
 const _kMapSize = MapSize(width: 800, height: 600);
-const _kMapConfig = MapInitConfig(
-  backgroundColor: (0.1, 0.1, 0, 0.5),
+final _kMapConfig = MapInitConfig(
+  backgroundColor: Color(0x1A1A0080).toGalileo(),
   enableMultisampling: true,
-  latlon: (0.0, 0.0),
+  latlon: GeoLocation(latitude: 0.0, longitude: 0.0),
   mapSize: _kMapSize,
   zoomLevel: 10,
 );
@@ -77,8 +76,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
   // List<(double, double)> _pendingVertices = [];
   // bool get _isDrawingPolygon => _pendingVertices.isNotEmpty;
 
-  ViewportBounds? _cachedViewport;
-
   @override
   void initState() {
     super.initState();
@@ -99,15 +96,14 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
   Future<void> _refreshViewport() async {
     final vp = await _controller?.getViewport();
     if (vp == null || !mounted) return;
-    final bounds = ViewportBounds(
-      xMin: vp.xMin,
-      xMax: vp.xMax,
-      yMin: vp.yMin,
-      yMax: vp.yMax,
-    );
-    setState(() => _cachedViewport = bounds);
+    // final bounds = MapViewport(
+    //  xMin: vp.xMin,
+    //  xMax: vp.xMax,
+    //  yMin: vp.yMin,
+    //  yMax: vp.yMax,
+    // );
     //_polygonEditor.updateViewport(bounds);
-    await _controller?.layer_controller.updateViewport(vp);
+    await _controller?.layerController.updateViewport(vp);
   }
 
   Future<void> _switchLayer(LayerConfig newLayer) async {
@@ -121,7 +117,6 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     _features?.dispose();
     _features = null;
     // _pendingVertices = [];
-    _cachedViewport = null;
 
     final f = GalileoMapController.create(
       size: _kMapSize,
@@ -143,7 +138,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     setState(() => _controller = ctrl);
 
     final manager = FeatureLayerManager(
-      layerController: ctrl.layer_controller,
+      layerController: ctrl.layerController,
       polygonEditController: null,
     );
     await manager.initialize();
@@ -155,10 +150,9 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
       _statusMessage = 'Tap map to add features';
     });
 
-    ctrl.layer_controller.addOverlay(
+    ctrl.layerController.addOverlay(
       OverlayWidget(
-        lat: 0.0,
-        lon: 0.0,
+        loc: const GeoLocation(latitude: 0.0, longitude: 0.0),
         width: 200,
         height: 150,
         type: OverlayType.static,
@@ -183,27 +177,30 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     await _refreshViewport();
   }
 
-  Future<void> _addFeatureAtScreenPos(double x, double y, Size size) async {
+  Future<void> _addFeatureAtScreenPos(Offset off, Size size) async {
     final features = _features;
     if (features == null || !_layerReady) return;
 
     final viewport = await _controller?.getViewport();
     if (viewport == null || !mounted) return;
 
-    final vp = ViewportBounds(
+    final vp = MapViewport(
       xMin: viewport.xMin,
       xMax: viewport.xMax,
       yMin: viewport.yMin,
       yMax: viewport.yMax,
     );
-    setState(() => _cachedViewport = vp);
     // _polygonEditor.updateViewport(vp);
 
-    final screenPos = Offset(x, y);
-    final (lat, lon) = MapProjection.screenToLatLon(screenPos, size, vp);
+    final screenPos = ScreenLocation(x: off.dx, y: off.dy);
+    final loc = screenPos.toGeographical(
+      height: size.height,
+      width: size.width,
+      vp: vp,
+    );
 
     if (_drawMode == DrawMode.point) {
-      await _addPoint(features, lat, lon);
+      await _addPoint(features, loc);
       return;
     }
 
@@ -216,15 +213,11 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     // if (!hit) await _addPendingVertex(lat, lon);
   }
 
-  Future<void> _addPoint(
-    FeatureLayerManager features,
-    double lat,
-    double lon,
-  ) async {
+  Future<void> _addPoint(FeatureLayerManager features, GeoLocation loc) async {
     final point = Point(
-      coordinate: (lat, lon),
+      coordinate: loc,
       style: PointStyle(
-        fillColor: Color(r: 1.0, g: 0.0, b: 0.0, a: 1.0),
+        fillColor: Color(0xFF0000FF).toGalileo(),
         size: 8.0,
       ),
     );
@@ -232,7 +225,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     if (mounted) {
       setState(() {
         _statusMessage =
-            'Point at (${lat.toStringAsFixed(4)}, ${lon.toStringAsFixed(4)}) '
+            'Point at (${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}) '
             '— total: ${features.pointCount}';
       });
     }
@@ -448,14 +441,14 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                 const Spacer(),
                 CountChip(
                   icon: Icons.location_on,
-                  color: const ui.Color(0xFFF44336),
+                  color: const Color(0xFFF44336),
                   count: features?.pointCount ?? 0,
                   label: 'pts',
                 ),
                 // const SizedBox(width: 8),
                 // CountChip(
                 //     icon:  Icons.pentagon_outlined,
-                //     color: const ui.Color(0xFF2196F3),
+                //     color: const Color(0xFF2196F3),
                 //     count: features?.polygonCount ?? 0,
                 //     label: 'poly'),
               ],
@@ -464,7 +457,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
 
           // if (_isDrawingPolygon)
           //   Container(
-          //     color: const ui.Color(0xFFBBDEFB),
+          //     color: const Color(0xFFBBDEFB),
           //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           //     child: Row(
           //       children: [
@@ -534,11 +527,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                             if (down != null &&
                                 (e.localPosition - down).distance <
                                     _tapThreshold) {
-                              _addFeatureAtScreenPos(
-                                e.localPosition.dx,
-                                e.localPosition.dy,
-                                size,
-                              );
+                              _addFeatureAtScreenPos(e.localPosition, size);
                             }
                             _pointerDownPosition = null;
                           },
@@ -551,17 +540,17 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                             enableKeyboard: true,
                             autoDispose: false,
                             onViewportChanged: (vp) async {
-                              final bounds = ViewportBounds(
-                                xMin: vp.xMin,
-                                xMax: vp.xMax,
-                                yMin: vp.yMin,
-                                yMax: vp.yMax,
-                              );
+                              // final bounds = MapViewport(
+                              //   xMin: vp.xMin,
+                              //   xMax: vp.xMax,
+                              //   yMin: vp.yMin,
+                              //   yMax: vp.yMax,
+                              // );
                               if (!mounted) return;
-                              setState(() => _cachedViewport = bounds);
                               // _polygonEditor.updateViewport(bounds);
-                              await _controller?.layer_controller
-                                  .updateViewport(vp);
+                              await _controller?.layerController.updateViewport(
+                                vp,
+                              );
                             },
                             child: Stack(
                               children: [

@@ -11,18 +11,20 @@ import 'src/rust/frb_generated.dart' as rlib_gen;
 
 export 'package:galileo_flutter/src/rust/api/dart_types.dart'
     show
+        GeoLocation,
+        ScreenLocation,
         MapViewport,
         MapSize,
         LayerConfig,
         MapInitConfig,
         Polygon,
         PolygonStyle,
-        Color,
+        GalileoColor,
         Point2,
-        MapPosition,
         Point,
         PointStyle;
 export 'package:galileo_flutter/src/map/widget.dart';
+export 'package:galileo_flutter/src/extensions/color.dart';
 export 'package:galileo_flutter/src/map/controller.dart';
 export 'package:galileo_flutter/src/layer/overlay.dart';
 export 'package:galileo_flutter/src/overlay/overlay_widget.dart';
