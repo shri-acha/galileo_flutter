@@ -155,7 +155,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
         loc: const GeoLocation(latitude: 0.0, longitude: 0.0),
         width: 200,
         height: 150,
-        type: OverlayType.static,
+        type: OverlayType.relative,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.blue.withValues(alpha: 0.9),
@@ -216,10 +216,7 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
   Future<void> _addPoint(FeatureLayerManager features, GeoLocation loc) async {
     final point = Point(
       coordinate: loc,
-      style: PointStyle(
-        fillColor: Color(0xFF0000FF).toGalileo(),
-        size: 8.0,
-      ),
+      style: PointStyle(fillColor: Color(0xFF0000FF).toGalileo(), size: 8.0),
     );
     await features.addPoint(point);
     if (mounted) {
@@ -540,12 +537,12 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
                             enableKeyboard: true,
                             autoDispose: false,
                             onViewportChanged: (vp) async {
-                              // final bounds = MapViewport(
-                              //   xMin: vp.xMin,
-                              //   xMax: vp.xMax,
-                              //   yMin: vp.yMin,
-                              //   yMax: vp.yMax,
-                              // );
+                              //  final bounds = MapViewport(
+                              //    xMin: vp.xMin,
+                              //    xMax: vp.xMax,
+                              //    yMin: vp.yMin,
+                              //    yMax: vp.yMax,
+                              //  );
                               if (!mounted) return;
                               // _polygonEditor.updateViewport(bounds);
                               await _controller?.layerController.updateViewport(

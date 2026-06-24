@@ -94,7 +94,7 @@ class MapOverlayFlowDelegate extends FlowDelegate {
             Vector3(screenPos.x, screenPos.y, 0),
           );
 
-          transformMatrix.scaleByVector3(Vector3(scale, 1, 1));
+          transformMatrix.scaleByVector3(Vector3(scale, scale, 1));
 
           transformMatrix.translateByVector3(
             Vector3(-childSize.width / 2, -childSize.height / 2, 0),

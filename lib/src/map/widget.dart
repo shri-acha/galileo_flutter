@@ -126,11 +126,10 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
   bool _isFetchingViewport = false;
   bool _needsViewportUpdate = false;
 
-  /// Fetch the current viewport from Rust and emit it to [onViewportChanged].
+  /// Fetch the current viewport from Rust, update [layerController], and emit it to [onViewportChanged].
   /// Non-blocking/locked: starts the FFI call immediately, and queues at most one
   /// subsequent update if another request comes in while the FFI call is active.
   void _scheduleViewportUpdate() {
-    if (widget.onViewportChanged == null) return;
     if (_isFetchingViewport) {
       _needsViewportUpdate = true;
       return;
@@ -144,7 +143,8 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         .then((vp) {
           _isFetchingViewport = false;
           if (vp != null && mounted) {
-            widget.onViewportChanged!(vp);
+            widget.controller.layerController.updateViewport(vp);
+            widget.onViewportChanged?.call(vp);
           }
           if (_needsViewportUpdate && mounted) {
             _scheduleViewportUpdate();
@@ -178,8 +178,15 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         setState(() {
           currentState = state;
         });
+        if (state == GalileoMapState.ready) {
+          _scheduleViewportUpdate();
+        }
       }
     });
+
+    if (widget.controller.currentState == GalileoMapState.ready) {
+      _scheduleViewportUpdate();
+    }
   }
 
   void _sendPanEvent(Offset delta, Offset position) {
@@ -407,8 +414,10 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
             _lastMapSize!.height != newMapSize.height) {
           _lastMapSize = newMapSize;
           // resize in next frame
-          // TODO: test this
-          Future.microtask(() => widget.controller.resize(newMapSize));
+          Future.microtask(() async {
+            await widget.controller.resize(newMapSize);
+            _scheduleViewportUpdate();
+          });
         }
 
         return mapContent;

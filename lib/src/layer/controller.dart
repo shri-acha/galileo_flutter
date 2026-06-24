@@ -54,8 +54,12 @@ class LayerController extends ChangeNotifier {
 
     final width = nativeViewport.xMax - nativeViewport.xMin;
     if (width > 0) {
-      _initialCoordWidth ??= width;
+      _initialCoordWidth = _initialCoordWidth ?? width;
       _zoomScale = _initialCoordWidth! / width;
+    }
+
+    for (final editor in _editors.values) {
+      editor.updateViewport(_viewportBounds!);
     }
 
     notifyListeners();
