@@ -143,7 +143,10 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         .then((vp) {
           _isFetchingViewport = false;
           if (vp != null && mounted) {
-            widget.controller.layerController.updateViewport(vp);
+            widget.controller.layerController.updateViewport(
+              vp,
+              widget.controller.size,
+            );
             widget.onViewportChanged?.call(vp);
           }
           if (_needsViewportUpdate && mounted) {
@@ -309,6 +312,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         _lastPointerPosition = null;
         panTicker.stop();
         _panAccumulatedDelta = Offset.zero;
+        _scheduleViewportUpdate();
       },
       onPointerCancel: (event) {
         _activePointers.remove(event.pointer);
@@ -397,6 +401,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
       onScaleEnd: (details) {
         _lastPinchScaleValue = 1.0;
         _isPinchScaling = false;
+        _scheduleViewportUpdate();
       },
       child: mapContent,
     );

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 
 enum OverlayType {
-  /// Size stays constant in screen pixels.
+  /// Widget's Position stays constant 
   static,
 
-  /// Size is scaled on the basis of zoom level.
+  /// Widget's Position is anchored on the Map's Position
   relative,
 }
 
