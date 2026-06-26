@@ -1207,6 +1207,355 @@ abstract class LayerConfig_WidgetLayer extends LayerConfig {
 }
 
 /// @nodoc
+mixin _$Location {
+  Object get field0 => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(GeoLocation field0) geo,
+    required TResult Function(ScreenLocation field0) screen,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(GeoLocation field0)? geo,
+    TResult? Function(ScreenLocation field0)? screen,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(GeoLocation field0)? geo,
+    TResult Function(ScreenLocation field0)? screen,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Location_Geo value) geo,
+    required TResult Function(Location_Screen value) screen,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Location_Geo value)? geo,
+    TResult? Function(Location_Screen value)? screen,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Location_Geo value)? geo,
+    TResult Function(Location_Screen value)? screen,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $LocationCopyWith<$Res> {
+  factory $LocationCopyWith(Location value, $Res Function(Location) then) =
+      _$LocationCopyWithImpl<$Res, Location>;
+}
+
+/// @nodoc
+class _$LocationCopyWithImpl<$Res, $Val extends Location>
+    implements $LocationCopyWith<$Res> {
+  _$LocationCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Location
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+abstract class _$$Location_GeoImplCopyWith<$Res> {
+  factory _$$Location_GeoImplCopyWith(
+    _$Location_GeoImpl value,
+    $Res Function(_$Location_GeoImpl) then,
+  ) = __$$Location_GeoImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({GeoLocation field0});
+}
+
+/// @nodoc
+class __$$Location_GeoImplCopyWithImpl<$Res>
+    extends _$LocationCopyWithImpl<$Res, _$Location_GeoImpl>
+    implements _$$Location_GeoImplCopyWith<$Res> {
+  __$$Location_GeoImplCopyWithImpl(
+    _$Location_GeoImpl _value,
+    $Res Function(_$Location_GeoImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Location
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? field0 = null}) {
+    return _then(
+      _$Location_GeoImpl(
+        null == field0
+            ? _value.field0
+            : field0 // ignore: cast_nullable_to_non_nullable
+                as GeoLocation,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Location_GeoImpl extends Location_Geo {
+  const _$Location_GeoImpl(this.field0) : super._();
+
+  @override
+  final GeoLocation field0;
+
+  @override
+  String toString() {
+    return 'Location.geo(field0: $field0)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Location_GeoImpl &&
+            (identical(other.field0, field0) || other.field0 == field0));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, field0);
+
+  /// Create a copy of Location
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Location_GeoImplCopyWith<_$Location_GeoImpl> get copyWith =>
+      __$$Location_GeoImplCopyWithImpl<_$Location_GeoImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(GeoLocation field0) geo,
+    required TResult Function(ScreenLocation field0) screen,
+  }) {
+    return geo(field0);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(GeoLocation field0)? geo,
+    TResult? Function(ScreenLocation field0)? screen,
+  }) {
+    return geo?.call(field0);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(GeoLocation field0)? geo,
+    TResult Function(ScreenLocation field0)? screen,
+    required TResult orElse(),
+  }) {
+    if (geo != null) {
+      return geo(field0);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Location_Geo value) geo,
+    required TResult Function(Location_Screen value) screen,
+  }) {
+    return geo(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Location_Geo value)? geo,
+    TResult? Function(Location_Screen value)? screen,
+  }) {
+    return geo?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Location_Geo value)? geo,
+    TResult Function(Location_Screen value)? screen,
+    required TResult orElse(),
+  }) {
+    if (geo != null) {
+      return geo(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Location_Geo extends Location {
+  const factory Location_Geo(final GeoLocation field0) = _$Location_GeoImpl;
+  const Location_Geo._() : super._();
+
+  @override
+  GeoLocation get field0;
+
+  /// Create a copy of Location
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Location_GeoImplCopyWith<_$Location_GeoImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Location_ScreenImplCopyWith<$Res> {
+  factory _$$Location_ScreenImplCopyWith(
+    _$Location_ScreenImpl value,
+    $Res Function(_$Location_ScreenImpl) then,
+  ) = __$$Location_ScreenImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({ScreenLocation field0});
+}
+
+/// @nodoc
+class __$$Location_ScreenImplCopyWithImpl<$Res>
+    extends _$LocationCopyWithImpl<$Res, _$Location_ScreenImpl>
+    implements _$$Location_ScreenImplCopyWith<$Res> {
+  __$$Location_ScreenImplCopyWithImpl(
+    _$Location_ScreenImpl _value,
+    $Res Function(_$Location_ScreenImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Location
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? field0 = null}) {
+    return _then(
+      _$Location_ScreenImpl(
+        null == field0
+            ? _value.field0
+            : field0 // ignore: cast_nullable_to_non_nullable
+                as ScreenLocation,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Location_ScreenImpl extends Location_Screen {
+  const _$Location_ScreenImpl(this.field0) : super._();
+
+  @override
+  final ScreenLocation field0;
+
+  @override
+  String toString() {
+    return 'Location.screen(field0: $field0)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Location_ScreenImpl &&
+            (identical(other.field0, field0) || other.field0 == field0));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, field0);
+
+  /// Create a copy of Location
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Location_ScreenImplCopyWith<_$Location_ScreenImpl> get copyWith =>
+      __$$Location_ScreenImplCopyWithImpl<_$Location_ScreenImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(GeoLocation field0) geo,
+    required TResult Function(ScreenLocation field0) screen,
+  }) {
+    return screen(field0);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(GeoLocation field0)? geo,
+    TResult? Function(ScreenLocation field0)? screen,
+  }) {
+    return screen?.call(field0);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(GeoLocation field0)? geo,
+    TResult Function(ScreenLocation field0)? screen,
+    required TResult orElse(),
+  }) {
+    if (screen != null) {
+      return screen(field0);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Location_Geo value) geo,
+    required TResult Function(Location_Screen value) screen,
+  }) {
+    return screen(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Location_Geo value)? geo,
+    TResult? Function(Location_Screen value)? screen,
+  }) {
+    return screen?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Location_Geo value)? geo,
+    TResult Function(Location_Screen value)? screen,
+    required TResult orElse(),
+  }) {
+    if (screen != null) {
+      return screen(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Location_Screen extends Location {
+  const factory Location_Screen(final ScreenLocation field0) =
+      _$Location_ScreenImpl;
+  const Location_Screen._() : super._();
+
+  @override
+  ScreenLocation get field0;
+
+  /// Create a copy of Location
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Location_ScreenImplCopyWith<_$Location_ScreenImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$UserEvent {
   Object get field0 => throw _privateConstructorUsedError;
   @optionalTypeArgs

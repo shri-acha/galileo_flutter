@@ -19,6 +19,7 @@ export 'package:galileo_flutter/src/rust/api/dart_types.dart'
         MapInitConfig,
         Polygon,
         PolygonStyle,
+		  Location,
         GalileoColor,
         Point2,
         Point,

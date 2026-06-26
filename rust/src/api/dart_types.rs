@@ -54,6 +54,14 @@ pub struct ScreenLocation {
     pub y: f64,
 }
 
+
+/// Provides a union type for Location access
+#[frb(unignore)]
+pub enum Location {
+    Geo(GeoLocation),
+    Screen(ScreenLocation),
+}
+
 const R: f64 = 6378137.0;
 
 fn lat_lon_to_mercator(lat: f64, lon: f64) -> (f64, f64) {

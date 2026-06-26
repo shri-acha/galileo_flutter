@@ -66,18 +66,26 @@ class MapOverlayFlowDelegate extends FlowDelegate {
       final childSize =
           context.getChildSize(i) ?? Size(overlay.width, overlay.height);
 
-      final screenPos = overlay.loc.toScreen(
-        height: mapSize.height,
-        width: mapSize.width,
-        vp: vp,
-      );
 
       final transformMatrix = Matrix4.identity();
 
+
       switch (overlay.type) {
         case OverlayType.static:
+		   final loc = overlay.loc as ScreenLocation;
+			final screenPos = loc;
+			  transformMatrix.translateByVector3(
+				 Vector3(screenPos.x, screenPos.y, 1), 
+			  );
           break;
         case OverlayType.relative:
+
+		   final loc = overlay.loc as GeoLocation;
+			final screenPos = loc.toScreen(
+			  height: mapSize.height,
+			  width: mapSize.width,
+			  vp: vp,
+			);
           transformMatrix.translateByVector3(
             Vector3(
               screenPos.x - (childSize.width / 2),

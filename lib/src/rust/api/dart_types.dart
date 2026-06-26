@@ -135,6 +135,14 @@ sealed class LayerConfig with _$LayerConfig {
   const factory LayerConfig.widgetLayer() = LayerConfig_WidgetLayer;
 }
 
+@freezed
+sealed class Location with _$Location {
+  const Location._();
+
+  const factory Location.geo(GeoLocation field0) = Location_Geo;
+  const factory Location.screen(ScreenLocation field0) = Location_Screen;
+}
+
 class MapInitConfig {
   final GeoLocation latlon;
   final int zoomLevel;

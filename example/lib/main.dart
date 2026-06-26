@@ -154,11 +154,10 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
 	  });
 
 	  ctrl.layerController.addOverlay(
-		 OverlayWidget(
-			loc: const GeoLocation(latitude: 0.0, longitude: 0.0),
+		 OverlayWidget.screen(
+			loc: const ScreenLocation(x: 100.0, y: 0.0),
 			width: 250,
 			height: 250,
-			type: OverlayType.static,
 			child: Container(
 			  decoration: BoxDecoration(
 				 color: Colors.blue.withValues(alpha: 0.9),
@@ -189,11 +188,10 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
 
 	  for (final pin in japanPins) {
 		 ctrl.layerController.addOverlay(
-			OverlayWidget(
+			OverlayWidget.geo(
 			  loc: pin.loc,
 			  width: 36,
 			  height: 48,
-			  type: OverlayType.relative,
 			  child: _LocationPin(color: pin.color),
 			),
 		 );
