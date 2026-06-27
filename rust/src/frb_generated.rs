@@ -1085,28 +1085,6 @@ impl SseDecode for Vec<u8> {
     }
 }
 
-impl SseDecode for crate::api::dart_types::Location {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut tag_ = <i32>::sse_decode(deserializer);
-        match tag_ {
-            0 => {
-                let mut var_field0 =
-                    <crate::api::dart_types::GeoLocation>::sse_decode(deserializer);
-                return crate::api::dart_types::Location::Geo(var_field0);
-            }
-            1 => {
-                let mut var_field0 =
-                    <crate::api::dart_types::ScreenLocation>::sse_decode(deserializer);
-                return crate::api::dart_types::Location::Screen(var_field0);
-            }
-            _ => {
-                unimplemented!("");
-            }
-        }
-    }
-}
-
 impl SseDecode for crate::api::dart_types::MapInitConfig {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1655,33 +1633,6 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::dart_types::LayerConfig>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::dart_types::Location {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        match self {
-            crate::api::dart_types::Location::Geo(field0) => {
-                [0.into_dart(), field0.into_into_dart().into_dart()].into_dart()
-            }
-            crate::api::dart_types::Location::Screen(field0) => {
-                [1.into_dart(), field0.into_into_dart().into_dart()].into_dart()
-            }
-            _ => {
-                unimplemented!("");
-            }
-        }
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for crate::api::dart_types::Location
-{
-}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::dart_types::Location>
-    for crate::api::dart_types::Location
-{
-    fn into_into_dart(self) -> crate::api::dart_types::Location {
-        self
-    }
-}
-// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::dart_types::MapInitConfig {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -2216,25 +2167,6 @@ impl SseEncode for Vec<u8> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <u8>::sse_encode(item, serializer);
-        }
-    }
-}
-
-impl SseEncode for crate::api::dart_types::Location {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        match self {
-            crate::api::dart_types::Location::Geo(field0) => {
-                <i32>::sse_encode(0, serializer);
-                <crate::api::dart_types::GeoLocation>::sse_encode(field0, serializer);
-            }
-            crate::api::dart_types::Location::Screen(field0) => {
-                <i32>::sse_encode(1, serializer);
-                <crate::api::dart_types::ScreenLocation>::sse_encode(field0, serializer);
-            }
-            _ => {
-                unimplemented!("");
-            }
         }
     }
 }

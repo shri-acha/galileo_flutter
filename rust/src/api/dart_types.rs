@@ -54,14 +54,6 @@ pub struct ScreenLocation {
     pub y: f64,
 }
 
-
-/// Provides a union type for Location access
-#[frb(unignore)]
-pub enum Location {
-    Geo(GeoLocation),
-    Screen(ScreenLocation),
-}
-
 const R: f64 = 6378137.0;
 
 fn lat_lon_to_mercator(lat: f64, lon: f64) -> (f64, f64) {
@@ -206,7 +198,7 @@ pub struct Polygon {
     pub style: PolygonStyle,
 }
 
-#[derive(Clone, Debug, PartialEq,Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct PolygonStyle {
     /// fillColor also as RGBA (0.0-1.0 range)
     pub fill_color: GalileoColor,
@@ -246,7 +238,7 @@ pub struct PointStyle {
 pub struct PointSymbol {}
 
 // Manual type definitions for Dart-friendly versions
-#[derive(Debug, Clone, Copy, PartialEq,Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct GalileoColor {
     pub r: f64,
     pub g: f64,

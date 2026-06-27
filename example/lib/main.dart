@@ -137,69 +137,86 @@ class _GalileoMapPageState extends State<GalileoMapPage> {
     await _initManagedLayer(ctrl);
   }
 
-	Future<void> _initManagedLayer(GalileoMapController ctrl) async {
-	  setState(() => _controller = ctrl);
+  Future<void> _initManagedLayer(GalileoMapController ctrl) async {
+    setState(() => _controller = ctrl);
 
-	  final manager = FeatureLayerManager(
-		 layerController: ctrl.layerController,
-		 polygonEditController: null,
-	  );
-	  await manager.initialize();
+    final manager = FeatureLayerManager(
+      layerController: ctrl.layerController,
+      polygonEditController: null,
+    );
+    await manager.initialize();
 
-	  if (!mounted) return;
-	  setState(() {
-		 _features = manager;
-		 _layerReady = true;
-		 _statusMessage = 'Tap map to add features';
-	  });
+    if (!mounted) return;
+    setState(() {
+      _features = manager;
+      _layerReady = true;
+      _statusMessage = 'Tap map to add features';
+    });
 
-	  ctrl.layerController.addOverlay(
-		 OverlayWidget.screen(
-			loc: const ScreenLocation(x: 100.0, y: 0.0),
-			width: 250,
-			height: 250,
-			child: Container(
-			  decoration: BoxDecoration(
-				 color: Colors.blue.withValues(alpha: 0.9),
-				 borderRadius: BorderRadius.circular(6),
-			  ),
-			  alignment: Alignment.center,
-			  child: const Text(
-				 'This is a statically anchored widget!',
-				 style: TextStyle(
-					color: Colors.white,
-					fontSize: 25,
-					fontWeight: FontWeight.bold,
-				 ),
-			  ),
-			),
-		 ),
-	  );
+    ctrl.layerController.addOverlay(
+      OverlayWidget.screen(
+        loc: const ScreenLocation(x: 100.0, y: 0.0),
+        width: 250,
+        height: 250,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          alignment: Alignment.center,
+          child: const Text(
+            'This is a statically anchored widget!',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
 
-	  // Japan pin overlays
-	  final japanPins = [
-		 (loc: const GeoLocation(latitude: 43.06, longitude: 141.35), color: const Color(0xFF009688)), // Sapporo
-		 (loc: const GeoLocation(latitude: 35.68, longitude: 139.69), color: const Color(0xFFE91E63)), // Tokyo
-		 (loc: const GeoLocation(latitude: 36.29, longitude: 137.62), color: const Color(0xFF7E57C2)), // Japanese Alps
-		 (loc: const GeoLocation(latitude: 35.01, longitude: 135.76), color: const Color(0xFFF57C00)), // Kyoto
-		 (loc: const GeoLocation(latitude: 34.69, longitude: 135.50), color: const Color(0xFF1976D2)), // Osaka
-		 (loc: const GeoLocation(latitude: 32.74, longitude: 129.87), color: const Color(0xFFAD1457)), // Nagasaki
-	  ];
+    // Japan pin overlays
+    final japanPins = [
+      (
+        loc: const GeoLocation(latitude: 43.06, longitude: 141.35),
+        color: const Color(0xFF009688),
+      ), // Sapporo
+      (
+        loc: const GeoLocation(latitude: 35.68, longitude: 139.69),
+        color: const Color(0xFFE91E63),
+      ), // Tokyo
+      (
+        loc: const GeoLocation(latitude: 36.29, longitude: 137.62),
+        color: const Color(0xFF7E57C2),
+      ), // Japanese Alps
+      (
+        loc: const GeoLocation(latitude: 35.01, longitude: 135.76),
+        color: const Color(0xFFF57C00),
+      ), // Kyoto
+      (
+        loc: const GeoLocation(latitude: 34.69, longitude: 135.50),
+        color: const Color(0xFF1976D2),
+      ), // Osaka
+      (
+        loc: const GeoLocation(latitude: 32.74, longitude: 129.87),
+        color: const Color(0xFFAD1457),
+      ), // Nagasaki
+    ];
 
-	  for (final pin in japanPins) {
-		 ctrl.layerController.addOverlay(
-			OverlayWidget.geo(
-			  loc: pin.loc,
-			  width: 36,
-			  height: 48,
-			  child: _LocationPin(color: pin.color),
-			),
-		 );
-	  }
+    for (final pin in japanPins) {
+      ctrl.layerController.addOverlay(
+        OverlayWidget.geo(
+          loc: pin.loc,
+          width: 36,
+          height: 48,
+          child: _LocationPin(color: pin.color),
+        ),
+      );
+    }
 
-	  await _refreshViewport();
-	}
-
+    await _refreshViewport();
+  }
 
   Future<void> _addFeatureAtScreenPos(Offset off, Size size) async {
     final features = _features;
@@ -773,14 +790,7 @@ class _PinPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
-    final h = size.height;
     final cx = w / 2;
-
-    final bodyPaint = Paint()..color = color;
-    final strokePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
 
     final radius = w * 0.46;
     final centerY = radius + 2;

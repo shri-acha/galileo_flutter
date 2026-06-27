@@ -1115,19 +1115,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Location dco_decode_location(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    switch (raw[0]) {
-      case 0:
-        return Location_Geo(dco_decode_box_autoadd_geo_location(raw[1]));
-      case 1:
-        return Location_Screen(dco_decode_box_autoadd_screen_location(raw[1]));
-      default:
-        throw Exception("unreachable");
-    }
-  }
-
-  @protected
   MapInitConfig dco_decode_map_init_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -1612,23 +1599,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Location sse_decode_location(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    var tag_ = sse_decode_i_32(deserializer);
-    switch (tag_) {
-      case 0:
-        var var_field0 = sse_decode_box_autoadd_geo_location(deserializer);
-        return Location_Geo(var_field0);
-      case 1:
-        var var_field0 = sse_decode_box_autoadd_screen_location(deserializer);
-        return Location_Screen(var_field0);
-      default:
-        throw UnimplementedError('');
-    }
-  }
-
-  @protected
   MapInitConfig sse_decode_map_init_config(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_latlon = sse_decode_geo_location(deserializer);
@@ -2098,19 +2068,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
-  }
-
-  @protected
-  void sse_encode_location(Location self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    switch (self) {
-      case Location_Geo(field0: final field0):
-        sse_encode_i_32(0, serializer);
-        sse_encode_box_autoadd_geo_location(field0, serializer);
-      case Location_Screen(field0: final field0):
-        sse_encode_i_32(1, serializer);
-        sse_encode_box_autoadd_screen_location(field0, serializer);
-    }
   }
 
   @protected

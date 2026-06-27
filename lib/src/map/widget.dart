@@ -192,7 +192,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
     }
   }
 
-  void _sendPanEvent(Offset delta, Offset position) {
+  Future<void> _sendPanEvent(Offset delta, Offset position) {
     final scaleFactor = _devicePixelRatio;
     final panEvent = UserEvent.drag(
       MouseButton.left,
@@ -209,16 +209,18 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         ),
       ),
     );
-    widget.controller.handleEvent(panEvent);
+    return widget.controller.handleEvent(panEvent);
   }
 
-  void _sendZoomEvent(double zoomFactor, Offset position) {
+  /// Sends a zoom event to Rust and returns the Future so callers can
+  /// chain [_scheduleViewportUpdate] *after* the event is processed.
+  Future<void> _sendZoomEvent(double zoomFactor, Offset position) {
     final scaleFactor = _devicePixelRatio;
     final zoomEvent = UserEvent.zoom(
       zoomFactor,
       Point2(x: position.dx * scaleFactor, y: position.dy * scaleFactor),
     );
-    widget.controller.handleEvent(zoomEvent);
+    return widget.controller.handleEvent(zoomEvent);
   }
 
   void _onTickPan(Duration elapsed) {
@@ -341,8 +343,9 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
           const zoomSensitivity = 0.002;
           final zoomFactor =
               math.pow(1.0 - zoomSensitivity, -event.scrollDelta.dy).toDouble();
-          _sendZoomEvent(zoomFactor, event.localPosition);
-          _scheduleViewportUpdate();
+          _sendZoomEvent(zoomFactor, event.localPosition).then((_) {
+            if (mounted) _scheduleViewportUpdate();
+          });
         }
       },
       onPointerMove: (event) {
@@ -393,8 +396,9 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
             final amplifiedDelta =
                 math.pow(scaleDelta, zoomSensitivity).toDouble();
             _lastPinchScaleValue = details.scale;
-            _sendZoomEvent(1.0 / amplifiedDelta, details.localFocalPoint);
-            _scheduleViewportUpdate();
+            _sendZoomEvent(1.0 / amplifiedDelta, details.localFocalPoint).then((_) {
+              if (mounted) _scheduleViewportUpdate();
+            });
           }
         }
       },
@@ -446,7 +450,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
     return false;
   }
 
-  _handleKeyNavigation(LogicalKeyboardKey key) {
+  Future<void> _handleKeyNavigation(LogicalKeyboardKey key) async {
     final centerX = widget.controller.size.width / _devicePixelRatio / 2;
     final centerY = widget.controller.size.height / _devicePixelRatio / 2;
     final center = Offset(centerX, centerY);
@@ -454,16 +458,17 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
 
     switch (key) {
       case LogicalKeyboardKey.arrowUp:
-        _sendPanEvent(const Offset(0, step), center);
+        await _sendPanEvent(const Offset(0, step), center);
       case LogicalKeyboardKey.arrowDown:
-        _sendPanEvent(const Offset(0, -step), center);
+        await _sendPanEvent(const Offset(0, -step), center);
       case LogicalKeyboardKey.arrowLeft:
-        _sendPanEvent(const Offset(step, 0), center);
+        await _sendPanEvent(const Offset(step, 0), center);
       case LogicalKeyboardKey.arrowRight:
-        _sendPanEvent(const Offset(-step, 0), center);
+        await _sendPanEvent(const Offset(-step, 0), center);
+
       case LogicalKeyboardKey.equal:
       case LogicalKeyboardKey.numpadAdd:
-        widget.controller.handleEvent(
+        await widget.controller.handleEvent(
           UserEvent.zoom(
             0.9,
             Point2(
@@ -474,7 +479,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         );
       case LogicalKeyboardKey.minus:
       case LogicalKeyboardKey.numpadSubtract:
-        widget.controller.handleEvent(
+        await widget.controller.handleEvent(
           UserEvent.zoom(
             1.1,
             Point2(
@@ -484,7 +489,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
           ),
         );
     }
-    _scheduleViewportUpdate();
+    if (mounted) _scheduleViewportUpdate();
   }
 
   @override

@@ -103,9 +103,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
-  Location dco_decode_location(dynamic raw);
-
-  @protected
   MapInitConfig dco_decode_map_init_config(dynamic raw);
 
   @protected
@@ -251,9 +248,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
-
-  @protected
-  Location sse_decode_location(SseDeserializer deserializer);
 
   @protected
   MapInitConfig sse_decode_map_init_config(SseDeserializer deserializer);
@@ -432,9 +426,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     Uint8List self,
     SseSerializer serializer,
   );
-
-  @protected
-  void sse_encode_location(Location self, SseSerializer serializer);
 
   @protected
   void sse_encode_map_init_config(MapInitConfig self, SseSerializer serializer);

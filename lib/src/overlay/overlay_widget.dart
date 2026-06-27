@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 
 enum OverlayType {
-  /// Widget's Position stays constant 
+  /// Widget's Position stays constant
   static,
 
   /// Widget's Position is anchored on the Map's Position
