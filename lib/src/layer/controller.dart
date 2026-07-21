@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:galileo_flutter/galileo_flutter.dart';
 import 'package:galileo_flutter/src/rust/api/galileo_api.dart' as rlib;
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:logging/logging.dart';
+
+final _log = Logger('LayerController');
 
 class LayerController extends ChangeNotifier {
   final Map<String, int> _layerNames = {};
@@ -14,7 +16,7 @@ class LayerController extends ChangeNotifier {
   double _zoomScale = 1.0;
   double get zoomScale => _zoomScale;
 
-  double? _initialCoordWidth;
+  double? _initialResolution;
 
   final List<OverlayWidget> _overlays = [];
   List<OverlayWidget> get overlays => List.unmodifiable(_overlays);
@@ -40,10 +42,24 @@ class LayerController extends ChangeNotifier {
     return e is T ? e : null;
   }
 
+  bool _drawSuppressPan = false;
+  bool get drawSuppressPan => _drawSuppressPan;
+  set drawSuppressPan(bool value) {
+    if (_drawSuppressPan != value) {
+      _drawSuppressPan = value;
+      notifyListeners();
+    }
+  }
+
+  /// True when any registered editor is performing a drag gesture and the map
+  /// should not process pointer-move events as pans.
+  bool get shouldSuppressPan =>
+      _drawSuppressPan || _editors.values.any((e) => e.shouldSuppressPan);
+
   LayerController({required this.sessionId, required this.layers});
 
-  /// Update Viewport
-  Future<void> updateViewport(MapViewport? nativeViewport) async {
+  /// Applies the viewport that was used to render the current texture frame.
+  void updateViewport(MapViewport? nativeViewport, MapSize mapSize) {
     if (nativeViewport == null) return;
     _viewportBounds = MapViewport(
       xMin: nativeViewport.xMin,
@@ -52,10 +68,15 @@ class LayerController extends ChangeNotifier {
       yMax: nativeViewport.yMax,
     );
 
-    final width = nativeViewport.xMax - nativeViewport.xMin;
-    if (width > 0) {
-      _initialCoordWidth ??= width;
-      _zoomScale = _initialCoordWidth! / width;
+    final coordWidth = nativeViewport.xMax - nativeViewport.xMin;
+    if (coordWidth > 0 && mapSize.width > 0) {
+      final resolution = coordWidth / mapSize.width;
+      _initialResolution ??= resolution;
+      _zoomScale = _initialResolution! / resolution;
+    }
+
+    for (final editor in _editors.values) {
+      editor.updateViewport(_viewportBounds!);
     }
 
     notifyListeners();
@@ -71,9 +92,7 @@ class LayerController extends ChangeNotifier {
         },
       );
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error adding layer: $e');
-      }
+      _log.severe('Error adding layer', e);
     }
   }
 
@@ -90,7 +109,7 @@ class LayerController extends ChangeNotifier {
       _layerNames[name] = id;
       return id;
     } catch (e) {
-      if (kDebugMode) debugPrint('Error creating point layer "$name": $e');
+      _log.severe('Error creating point layer "$name"', e);
       return null;
     }
   }
@@ -114,7 +133,7 @@ class LayerController extends ChangeNotifier {
 
       return id;
     } catch (e) {
-      if (kDebugMode) debugPrint('Error creating polygon layer "$name": $e');
+      _log.severe('Error creating polygon layer "$name"', e);
       return null;
     }
   }
@@ -122,7 +141,7 @@ class LayerController extends ChangeNotifier {
   Future<int> addPointToLayer(String layerName, Point point) async {
     final id = _layerNames[layerName];
     if (id == null) {
-      if (kDebugMode) debugPrint('No point layer named "$layerName"');
+      _log.warning('No point layer named "$layerName"');
       return -1;
     }
     try {
@@ -132,7 +151,7 @@ class LayerController extends ChangeNotifier {
         point: point,
       );
     } catch (e) {
-      if (kDebugMode) debugPrint('Error adding point to "$layerName": $e');
+      _log.severe('Error adding point to "$layerName"', e);
       return -1;
     }
   }
@@ -147,7 +166,7 @@ class LayerController extends ChangeNotifier {
         index: index,
       );
     } catch (e) {
-      if (kDebugMode) debugPrint('Error removing point from "$layerName": $e');
+      _log.severe('Error removing point from "$layerName"', e);
       return false;
     }
   }
@@ -155,7 +174,7 @@ class LayerController extends ChangeNotifier {
   Future<int> addPolygonToLayer(String layerName, Polygon polygon) async {
     final id = _layerNames[layerName];
     if (id == null) {
-      if (kDebugMode) debugPrint('No point layer named "$layerName"');
+      _log.warning('No polygon layer named "$layerName"');
       return -1;
     }
     try {
@@ -165,7 +184,7 @@ class LayerController extends ChangeNotifier {
         polygon: polygon,
       );
     } catch (e) {
-      if (kDebugMode) debugPrint('Error adding point to "$layerName": $e');
+      _log.severe('Error adding polygon to "$layerName"', e);
       return -1;
     }
   }
@@ -180,7 +199,7 @@ class LayerController extends ChangeNotifier {
         index: index,
       );
     } catch (e) {
-      if (kDebugMode) debugPrint('Error removing point from "$layerName": $e');
+      _log.severe('Error removing polygon from "$layerName"', e);
       return false;
     }
   }

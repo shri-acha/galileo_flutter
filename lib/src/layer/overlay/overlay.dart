@@ -1,7 +1,4 @@
-import 'package:galileo_flutter/src/overlay/overlay_widget.dart';
-import 'package:galileo_flutter/src/layer/controller.dart';
-import 'package:galileo_flutter/src/rust/api/dart_types.dart';
-
+import 'package:galileo_flutter/galileo_flutter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -21,13 +18,15 @@ class MapOverlayLayer extends StatelessWidget {
       builder: (context, constraints) {
         final mapSize = Size(constraints.maxWidth, constraints.maxHeight);
 
-        return Flow(
-          delegate: MapOverlayFlowDelegate(
-            controller: controller,
-            mapSize: mapSize,
-            overlays: overlays,
+        return ClipRect(
+          child: Flow(
+            delegate: MapOverlayFlowDelegate(
+              controller: controller,
+              mapSize: mapSize,
+              overlays: overlays,
+            ),
+            children: overlays,
           ),
-          children: overlays,
         );
       },
     );
@@ -59,48 +58,31 @@ class MapOverlayFlowDelegate extends FlowDelegate {
   void paintChildren(FlowPaintingContext context) {
     final vp = controller.viewportBounds;
     if (vp == null) return;
+    final screenPositions = GeoLocation.pointsToScreen(
+      points: overlays.map((overlay) => overlay.loc).toList(growable: false),
+      height: mapSize.height,
+      width: mapSize.width,
+      vp: vp,
+    );
 
     for (int i = 0; i < overlays.length; i++) {
       final overlay = overlays[i];
 
+      // Skip overlays outside their zoom visibility range.
+      if (!overlay.isVisibleAt(zoomScale)) continue;
+
       final childSize =
           context.getChildSize(i) ?? Size(overlay.width, overlay.height);
 
-      final screenPos = overlay.loc.toScreen(
-        height: mapSize.height,
-        width: mapSize.width,
-        vp: vp,
-      );
-
-      final transformMatrix = Matrix4.identity();
-
-      switch (overlay.type) {
-        // Retains its exact pixel dimension profile regardless of map scaling changes
-        case OverlayType.static:
-          transformMatrix.translateByVector3(
+      final screenPos = screenPositions[i];
+      final transformMatrix =
+          Matrix4.identity()..translateByVector3(
             Vector3(
               screenPos.x - (childSize.width / 2),
               screenPos.y - (childSize.height / 2),
               0,
             ),
           );
-          break;
-
-        // Dynamically changes its footprint on the screen to match map scale changes
-        case OverlayType.relative:
-          final scale = controller.zoomScale;
-
-          transformMatrix.translateByVector3(
-            Vector3(screenPos.x, screenPos.y, 0),
-          );
-
-          transformMatrix.scaleByVector3(Vector3(scale, 1, 1));
-
-          transformMatrix.translateByVector3(
-            Vector3(-childSize.width / 2, -childSize.height / 2, 0),
-          );
-          break;
-      }
 
       context.paintChild(i, transform: transformMatrix);
     }

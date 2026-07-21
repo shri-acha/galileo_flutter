@@ -1,6 +1,5 @@
 //! Types shared between Dart and Rust for Galileo Flutter integration.
 //! All types here are used by flutter_rust_bridge_codegen.
-
 use flutter_rust_bridge::frb;
 use galileo::galileo_types;
 use std::f64;
@@ -9,14 +8,14 @@ use std::f64;
 /// Geographic position with latitude and longitude coordinates.
 #[frb(dart_code = r#"
   GeoLocation operator +(GeoLocation other) {
-    double newLat = this.latitude + other.latitude;
-    double newLng = this.longitude + other.longitude;
+    double newLat = latitude + other.latitude;
+    double newLng = longitude + other.longitude;
     return _normalize(newLat, newLng);
   }
 
   GeoLocation operator -(GeoLocation other) {
-    double newLat = this.latitude - other.latitude;
-    double newLng = this.longitude - other.longitude;
+    double newLat = latitude - other.latitude;
+    double newLng = longitude - other.longitude;
     return _normalize(newLat, newLng);
   }
 
@@ -88,6 +87,20 @@ impl GeoLocation {
             },
         }
     }
+
+    /// Projects many geographic points in one Dart-to-Rust call.
+    #[frb(sync)]
+    pub fn points_to_screen(
+        points: Vec<GeoLocation>,
+        height: f64,
+        width: f64,
+        vp: MapViewport,
+    ) -> Vec<ScreenLocation> {
+        points
+            .into_iter()
+            .map(|point| point.to_screen(height, width, vp))
+            .collect()
+    }
 }
 
 impl ScreenLocation {
@@ -120,6 +133,18 @@ pub struct MapViewport {
     pub x_max: f64,
     pub y_min: f64,
     pub y_max: f64,
+}
+
+/// Viewport and physical texture size used to produce a rendered map frame.
+///
+/// Flutter overlays consume these frames so their positions are calculated
+/// from the same map state as the texture currently being presented.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RenderedMapFrame {
+    /// Monotonically increasing frame identifier for a map session.
+    pub sequence: u64,
+    pub viewport: MapViewport,
+    pub map_size: MapSize,
 }
 
 impl MapViewport {
@@ -177,14 +202,14 @@ pub enum LayerConfig {
         /// Stores the Point features to be rendered
         features: Vec<Point>,
     },
-    ///Placeholder variant for flutter based widgets layer
+    /// Placeholder variant handled by flutter
     WidgetLayer,
 }
 
 /// Closed geographic polygon with fill/stroke styling.
 /// Usage:
 ///   Polygon(
-///     points: [(27.7,85.3), ...],
+///     points: [...],
 ///     style: PolygonStyle(
 ///       fillColor: GalileoColor(0.2,0.5,0.9,0.8),
 ///       strokeColor: GalileoColor(1.0,1.0,1.0,1.0),
@@ -198,7 +223,7 @@ pub struct Polygon {
     pub style: PolygonStyle,
 }
 
-#[derive(Clone, Debug, PartialEq,Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct PolygonStyle {
     /// fillColor also as RGBA (0.0-1.0 range)
     pub fill_color: GalileoColor,
@@ -216,7 +241,7 @@ pub struct PolygonSymbol {}
 /// Points with properties for colors
 /// Usage:
 ///   Point(
-///     coordinate: (27.7,85.3),
+///     coordinate: GeoLocation(latitude:27.7,longitude:85.3),
 ///     style: PointStyle(
 ///       fillColor: GalileoColor(0.2,0.5,0.9,0.8),
 ///       size: 0.8,
@@ -238,7 +263,7 @@ pub struct PointStyle {
 pub struct PointSymbol {}
 
 // Manual type definitions for Dart-friendly versions
-#[derive(Debug, Clone, Copy, PartialEq,Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct GalileoColor {
     pub r: f64,
     pub g: f64,
@@ -313,8 +338,6 @@ pub enum MouseButton {
     /// The button you click when you are a pro gamer and want to look cool.
     Other,
 }
-
-pub type FeatureId = u64;
 
 impl MouseButton {
     #[frb(ignore)]

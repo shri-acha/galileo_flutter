@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:galileo_flutter/src/rust/api/dart_types.dart';
 import 'package:galileo_flutter/src/rust/api/galileo_api.dart' as rlib;
 import 'package:galileo_flutter/src/layer/controller.dart';
+import 'package:logging/logging.dart';
 
 import 'package:irondash_engine_context/irondash_engine_context.dart';
 import "package:rxdart/rxdart.dart" as rx;
+
+final _log = Logger('GalileoMapController');
 
 /// State of a Galileo map instance
 enum GalileoMapState {
@@ -25,7 +27,8 @@ enum GalileoMapState {
 
 /// Controller for managing a Galileo map instance
 class GalileoMapController {
-  final MapSize size;
+  MapSize _size;
+  MapSize get size => _size;
   final MapInitConfig config;
 
   late final LayerController layerController;
@@ -34,19 +37,22 @@ class GalileoMapController {
 
   final int sessionId;
   final rx.BehaviorSubject<GalileoMapState> _stateBroadcast;
-  final StreamSubscription<GalileoMapState>? _originalSub;
+  final rx.BehaviorSubject<MapViewport> _renderedViewportBroadcast =
+      rx.BehaviorSubject<MapViewport>();
+  StreamSubscription<RenderedMapFrame>? _renderedFrameSub;
+  BigInt _lastRenderedFrameSequence = BigInt.zero;
+  Future<void> _eventQueue = Future<void>.value();
   bool _running = false;
   int? _textureId;
 
   GalileoMapController._({
-    required this.size,
+    required MapSize size,
     required this.config,
     required this.layers,
     required this.sessionId,
     required rx.BehaviorSubject<GalileoMapState> stateBroadcast,
-    StreamSubscription<GalileoMapState>? originalSub,
-  }) : _stateBroadcast = stateBroadcast,
-       _originalSub = originalSub {
+  }) : _size = size,
+       _stateBroadcast = stateBroadcast {
     layerController = LayerController(sessionId: sessionId, layers: layers);
   }
 
@@ -55,6 +61,10 @@ class GalileoMapController {
 
   /// Current map state
   GalileoMapState get currentState => _stateBroadcast.value;
+
+  /// Viewports that produced completed native texture frames.
+  Stream<MapViewport> get renderedViewportStream =>
+      _renderedViewportBroadcast.stream;
 
   /// Texture ID for rendering (null if not ready)
   int? get textureId => _textureId;
@@ -89,7 +99,6 @@ class GalileoMapController {
         layers: layers,
         sessionId: newSessionResp.sessionId,
         stateBroadcast: stateBroadcast,
-        originalSub: null,
       );
 
       for (final layer in layers) {
@@ -98,6 +107,7 @@ class GalileoMapController {
 
       controller._textureId = newSessionResp.textureId;
       controller._running = true;
+      controller._startRenderedFrameStream();
 
       await rlib.requestMapRedraw(sessionId: controller.sessionId);
 
@@ -109,11 +119,29 @@ class GalileoMapController {
 
       return (controller, null);
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error creating Galileo map: $e');
-      }
+      _log.severe('Error creating Galileo map', e);
       return (null, e.toString());
     }
+  }
+
+  void _startRenderedFrameStream() {
+    _renderedFrameSub = rlib
+        .streamRenderedMapFrames(sessionId: sessionId)
+        .listen(
+          (frame) {
+            if (!_running || frame.sequence <= _lastRenderedFrameSequence) {
+              return;
+            }
+            _lastRenderedFrameSequence = frame.sequence;
+            layerController.updateViewport(frame.viewport, frame.mapSize);
+            _renderedViewportBroadcast.add(frame.viewport);
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            if (_running) {
+              _log.warning('Rendered-frame stream failed', error, stackTrace);
+            }
+          },
+        );
   }
 
   /// Start the session keep-alive task
@@ -125,9 +153,7 @@ class GalileoMapController {
           await rlib.markSessionAlive(sessionId: sessionId);
           await Future.delayed(const Duration(seconds: 1));
         } catch (e) {
-          if (kDebugMode) {
-            debugPrint('Error in keep-alive task: $e');
-          }
+          _log.severe('Error in keep-alive task', e);
           if (_running) {
             _stateBroadcast.add(GalileoMapState.error);
           }
@@ -138,16 +164,17 @@ class GalileoMapController {
   }
 
   /// Handle user events from the map widget
-  Future<void> handleEvent(UserEvent event) async {
-    if (!_running) return;
+  Future<void> handleEvent(UserEvent event) {
+    if (!_running) return Future<void>.value();
 
-    try {
-      await rlib.handleEventForSession(sessionId: sessionId, event: event);
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error handling event: $e');
+    _eventQueue = _eventQueue.then((_) async {
+      try {
+        await rlib.handleEventForSession(sessionId: sessionId, event: event);
+      } catch (e) {
+        _log.warning('Error handling event', e);
       }
-    }
+    });
+    return _eventQueue;
   }
 
   Future<void> requestRedraw() async {
@@ -167,13 +194,11 @@ class GalileoMapController {
   /// Resize the map
   Future<void> resize(MapSize newSize) async {
     if (!_running) return;
-
     try {
       await rlib.resizeSession(sessionId: sessionId, newSize: newSize);
+      _size = newSize;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error resizing map: $e');
-      }
+      _log.severe('Error resizing map', e);
     }
   }
 
@@ -183,12 +208,11 @@ class GalileoMapController {
 
     try {
       await rlib.destroySession(sessionId: sessionId);
-      await _originalSub?.cancel();
+      await _renderedFrameSub?.cancel();
+      await _renderedViewportBroadcast.close();
       await _stateBroadcast.close();
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error disposing Galileo map controller: $e');
-      }
+      _log.severe('Error disposing Galileo map controller', e);
     }
   }
 }

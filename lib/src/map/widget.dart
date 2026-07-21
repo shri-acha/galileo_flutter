@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:logging/logging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:galileo_flutter/src/map/controller.dart';
 import 'package:galileo_flutter/src/rust/api/dart_types.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:galileo_flutter/src/layer/overlay.dart';
+import 'package:galileo_flutter/src/layer/overlay/overlay.dart';
+
+final _log = Logger('GalileoMapWidget');
 
 /// A widget that displays a Galileo map with interactive controls
 class GalileoMapWidget extends StatefulWidget {
@@ -110,6 +112,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
     with TickerProviderStateMixin {
   GalileoMapState? currentState;
   StreamSubscription<GalileoMapState>? streamSubscription;
+  StreamSubscription<MapViewport>? viewportSubscription;
   late FocusNode _focusNode;
   final Set<LogicalKeyboardKey> _pressedKeys = {};
   late Ticker panTicker;
@@ -121,42 +124,6 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
   bool _isPinchScaling = false;
 
   final Set<int> _activePointers = {};
-
-  /// Lock flags to ensure only one FFI call to getViewport is active at any time.
-  bool _isFetchingViewport = false;
-  bool _needsViewportUpdate = false;
-
-  /// Fetch the current viewport from Rust and emit it to [onViewportChanged].
-  /// Non-blocking/locked: starts the FFI call immediately, and queues at most one
-  /// subsequent update if another request comes in while the FFI call is active.
-  void _scheduleViewportUpdate() {
-    if (widget.onViewportChanged == null) return;
-    if (_isFetchingViewport) {
-      _needsViewportUpdate = true;
-      return;
-    }
-
-    _isFetchingViewport = true;
-    _needsViewportUpdate = false;
-
-    widget.controller
-        .getViewport()
-        .then((vp) {
-          _isFetchingViewport = false;
-          if (vp != null && mounted) {
-            widget.onViewportChanged!(vp);
-          }
-          if (_needsViewportUpdate && mounted) {
-            _scheduleViewportUpdate();
-          }
-        })
-        .catchError((e) {
-          _isFetchingViewport = false;
-          if (_needsViewportUpdate && mounted) {
-            _scheduleViewportUpdate();
-          }
-        });
-  }
 
   double get _devicePixelRatio {
     return MediaQuery.of(context).devicePixelRatio;
@@ -180,9 +147,14 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         });
       }
     });
+    viewportSubscription = widget.controller.renderedViewportStream.listen((
+      vp,
+    ) {
+      if (mounted) widget.onViewportChanged?.call(vp);
+    });
   }
 
-  void _sendPanEvent(Offset delta, Offset position) {
+  Future<void> _sendPanEvent(Offset delta, Offset position) {
     final scaleFactor = _devicePixelRatio;
     final panEvent = UserEvent.drag(
       MouseButton.left,
@@ -199,24 +171,29 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         ),
       ),
     );
-    widget.controller.handleEvent(panEvent);
+    return widget.controller.handleEvent(panEvent);
   }
 
-  void _sendZoomEvent(double zoomFactor, Offset position) {
+  /// Sends a zoom event to Rust. Overlay updates arrive with the rendered frame.
+  Future<void> _sendZoomEvent(double zoomFactor, Offset position) {
     final scaleFactor = _devicePixelRatio;
     final zoomEvent = UserEvent.zoom(
       zoomFactor,
       Point2(x: position.dx * scaleFactor, y: position.dy * scaleFactor),
     );
-    widget.controller.handleEvent(zoomEvent);
+    return widget.controller.handleEvent(zoomEvent);
   }
 
   void _onTickPan(Duration elapsed) {
+    // If pan is suppressed, discard any accumulated delta
+    // so the map doesn't pan when the user releases.
+    if (widget.controller.layerController.shouldSuppressPan) {
+      _panAccumulatedDelta = Offset.zero;
+      return;
+    }
     if (_panAccumulatedDelta != Offset.zero) {
       _sendPanEvent(_panAccumulatedDelta, _lastPointerPosition!);
       _panAccumulatedDelta = Offset.zero;
-      // Schedule a viewport fetch so overlay widgets track the pan in real time.
-      _scheduleViewportUpdate();
     }
   }
 
@@ -331,7 +308,6 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
           final zoomFactor =
               math.pow(1.0 - zoomSensitivity, -event.scrollDelta.dy).toDouble();
           _sendZoomEvent(zoomFactor, event.localPosition);
-          _scheduleViewportUpdate();
         }
       },
       onPointerMove: (event) {
@@ -340,6 +316,14 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         }
 
         if (event.buttons == 0) {
+          return;
+        }
+
+        // If an overlay has requested pan suppression,
+        // still track the position so the next un-suppressed frame is correct,
+        // but don't accumulate the delta.
+        if (widget.controller.layerController.shouldSuppressPan) {
+          _lastPointerPosition = event.localPosition;
           return;
         }
 
@@ -383,7 +367,6 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
                 math.pow(scaleDelta, zoomSensitivity).toDouble();
             _lastPinchScaleValue = details.scale;
             _sendZoomEvent(1.0 / amplifiedDelta, details.localFocalPoint);
-            _scheduleViewportUpdate();
           }
         }
       },
@@ -407,8 +390,10 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
             _lastMapSize!.height != newMapSize.height) {
           _lastMapSize = newMapSize;
           // resize in next frame
-          // TODO: test this
-          Future.microtask(() => widget.controller.resize(newMapSize));
+          Future.microtask(() async {
+            if (!mounted) return;
+            await widget.controller.resize(newMapSize);
+          });
         }
 
         return mapContent;
@@ -432,7 +417,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
     return false;
   }
 
-  _handleKeyNavigation(LogicalKeyboardKey key) {
+  Future<void> _handleKeyNavigation(LogicalKeyboardKey key) async {
     final centerX = widget.controller.size.width / _devicePixelRatio / 2;
     final centerY = widget.controller.size.height / _devicePixelRatio / 2;
     final center = Offset(centerX, centerY);
@@ -440,16 +425,17 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
 
     switch (key) {
       case LogicalKeyboardKey.arrowUp:
-        _sendPanEvent(const Offset(0, step), center);
+        await _sendPanEvent(const Offset(0, step), center);
       case LogicalKeyboardKey.arrowDown:
-        _sendPanEvent(const Offset(0, -step), center);
+        await _sendPanEvent(const Offset(0, -step), center);
       case LogicalKeyboardKey.arrowLeft:
-        _sendPanEvent(const Offset(step, 0), center);
+        await _sendPanEvent(const Offset(step, 0), center);
       case LogicalKeyboardKey.arrowRight:
-        _sendPanEvent(const Offset(-step, 0), center);
+        await _sendPanEvent(const Offset(-step, 0), center);
+
       case LogicalKeyboardKey.equal:
       case LogicalKeyboardKey.numpadAdd:
-        widget.controller.handleEvent(
+        await widget.controller.handleEvent(
           UserEvent.zoom(
             0.9,
             Point2(
@@ -460,7 +446,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
         );
       case LogicalKeyboardKey.minus:
       case LogicalKeyboardKey.numpadSubtract:
-        widget.controller.handleEvent(
+        await widget.controller.handleEvent(
           UserEvent.zoom(
             1.1,
             Point2(
@@ -470,7 +456,6 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
           ),
         );
     }
-    _scheduleViewportUpdate();
   }
 
   @override
@@ -512,18 +497,15 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
 
     Future.microtask(() async {
       streamSubscription?.cancel();
+      viewportSubscription?.cancel();
       if (widget.autoDispose) {
         try {
-          if (kDebugMode) {
-            debugPrint(
-              'Disposing Galileo map controller (${widget.controller.sessionId})',
-            );
-          }
+          _log.info(
+            'Disposing Galileo map controller (${widget.controller.sessionId})',
+          );
           await widget.controller.dispose();
         } catch (e) {
-          if (kDebugMode) {
-            debugPrint('Error disposing Galileo map controller: $e');
-          }
+          _log.severe('Error disposing Galileo map controller', e);
         }
       }
     });
