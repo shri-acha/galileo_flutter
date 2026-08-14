@@ -177,6 +177,29 @@ class GalileoMapController {
     return _eventQueue;
   }
 
+  /// Pan the map programmatically by screen pixel offsets.
+  ///
+  /// Positive [dx] moves the map content to the right (moves camera left),
+  /// positive [dy] moves the map content down (moves camera up).
+  Future<void> panByPixels(double dx, double dy) {
+    if (!_running) return Future<void>.value();
+    final centerX = _size.width / 2.0;
+    final centerY = _size.height / 2.0;
+    final panEvent = UserEvent.drag(
+      MouseButton.left,
+      Vector2(dx: dx, dy: dy),
+      MouseEvent(
+        screenPointerPosition: Point2(x: centerX, y: centerY),
+        buttons: const MouseButtonsState(
+          left: MouseButtonState.pressed,
+          middle: MouseButtonState.released,
+          right: MouseButtonState.released,
+        ),
+      ),
+    );
+    return handleEvent(panEvent);
+  }
+
   Future<void> requestRedraw() async {
     await rlib.requestMapRedraw(sessionId: sessionId);
   }

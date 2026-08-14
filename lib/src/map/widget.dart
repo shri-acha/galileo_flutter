@@ -37,6 +37,9 @@ class GalileoMapWidget extends StatefulWidget {
   /// Fires at most once per 30 ms to avoid flooding the Rust FFI layer.
   final void Function(MapViewport viewport)? onViewportChanged;
 
+  /// Whether to enable inertial / velocity scrolling when dragging and releasing
+  final bool enableInertia;
+
   const GalileoMapWidget._({
     super.key,
     required this.controller,
@@ -45,6 +48,7 @@ class GalileoMapWidget extends StatefulWidget {
     this.child,
     this.autoDispose = true,
     this.enableKeyboard = true,
+    this.enableInertia = true,
     this.focusNode,
     this.onTap,
     this.onViewportChanged,
@@ -58,6 +62,7 @@ class GalileoMapWidget extends StatefulWidget {
     List<LayerConfig> layers = const [LayerConfig.osm()],
     bool autoDispose = true,
     bool enableKeyboard = true,
+    bool enableInertia = true,
     FocusNode? focusNode,
     Widget? child,
     void Function(double x, double y)? onTap,
@@ -68,6 +73,7 @@ class GalileoMapWidget extends StatefulWidget {
       controller: controller,
       autoDispose: autoDispose,
       enableKeyboard: enableKeyboard,
+      enableInertia: enableInertia,
       focusNode: focusNode,
       onTap: onTap,
       onViewportChanged: onViewportChanged,
@@ -85,6 +91,7 @@ class GalileoMapWidget extends StatefulWidget {
     List<LayerConfig> layers = const [LayerConfig.osm()],
     bool autoDispose = true,
     bool enableKeyboard = true,
+    bool enableInertia = true,
     FocusNode? focusNode,
     Widget? child,
     void Function(double x, double y)? onTap,
@@ -97,6 +104,7 @@ class GalileoMapWidget extends StatefulWidget {
       layers: layers,
       autoDispose: autoDispose,
       enableKeyboard: enableKeyboard,
+      enableInertia: enableInertia,
       focusNode: focusNode,
       onTap: onTap,
       onViewportChanged: onViewportChanged,
@@ -116,7 +124,12 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
   late FocusNode _focusNode;
   final Set<LogicalKeyboardKey> _pressedKeys = {};
   late Ticker panTicker;
+  late Ticker _inertiaTicker;
   Offset _panAccumulatedDelta = Offset.zero;
+
+  VelocityTracker? _velocityTracker;
+  Offset _inertiaVelocity = Offset.zero;
+  Duration? _lastInertiaTime;
 
   Offset? _lastPointerPosition;
   MapSize? _lastMapSize;
@@ -135,6 +148,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
 
     _focusNode = widget.focusNode ?? FocusNode();
     panTicker = createTicker(_onTickPan);
+    _inertiaTicker = createTicker(_onTickInertia);
 
     if (widget.enableKeyboard) {
       HardwareKeyboard.instance.addHandler(_handleKeyEvent);
@@ -152,6 +166,47 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
     ) {
       if (mounted) widget.onViewportChanged?.call(vp);
     });
+  }
+
+  void _stopInertia() {
+    if (_inertiaTicker.isActive) {
+      _inertiaTicker.stop();
+    }
+    _inertiaVelocity = Offset.zero;
+    _lastInertiaTime = null;
+  }
+
+  void _onTickInertia(Duration elapsed) {
+    if (widget.controller.layerController.shouldSuppressPan) {
+      _stopInertia();
+      return;
+    }
+
+    if (_lastInertiaTime == null) {
+      _lastInertiaTime = elapsed;
+      return;
+    }
+
+    final dtSec = (elapsed - _lastInertiaTime!).inMicroseconds / 1000000.0;
+    _lastInertiaTime = elapsed;
+
+    if (dtSec <= 0 || dtSec > 0.1) return;
+
+    final stepDelta = _inertiaVelocity * dtSec;
+    if (stepDelta.distance < 0.1 || _inertiaVelocity.distance < 15.0) {
+      _stopInertia();
+      return;
+    }
+
+    final fallbackPos = Offset(
+      widget.controller.size.width / _devicePixelRatio / 2,
+      widget.controller.size.height / _devicePixelRatio / 2,
+    );
+    _sendPanEvent(stepDelta, _lastPointerPosition ?? fallbackPos);
+
+    // Exponential deceleration factor (approx 0.92 at 60fps)
+    const friction = 0.92;
+    _inertiaVelocity *= math.pow(friction, dtSec * 60.0).toDouble();
   }
 
   Future<void> _sendPanEvent(Offset delta, Offset position) {
@@ -263,9 +318,16 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
       onPointerDown: (event) {
         _activePointers.add(event.pointer);
 
+        _stopInertia();
+
         if (_activePointers.length > 1 || _isPinchScaling) {
+          _velocityTracker = null;
           return;
         }
+
+        _velocityTracker = VelocityTracker.withKind(event.kind);
+        _velocityTracker?.addPosition(event.timeStamp, event.localPosition);
+
         // Request focus for keyboard events
         if (widget.enableKeyboard) {
           _focusNode.requestFocus();
@@ -276,13 +338,30 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
       },
       onPointerUp: (event) {
         _activePointers.remove(event.pointer);
-        _lastPointerPosition = null;
         panTicker.stop();
         _panAccumulatedDelta = Offset.zero;
+
+        _velocityTracker?.addPosition(event.timeStamp, event.localPosition);
+
+        if (widget.enableInertia &&
+            !_isPinchScaling &&
+            _activePointers.isEmpty &&
+            !widget.controller.layerController.shouldSuppressPan) {
+          final estimate = _velocityTracker?.getVelocity();
+          if (estimate != null && estimate.pixelsPerSecond.distance > 60.0) {
+            _inertiaVelocity = estimate.pixelsPerSecond;
+            _lastInertiaTime = null;
+            _inertiaTicker.start();
+          }
+        }
+
+        _velocityTracker = null;
       },
       onPointerCancel: (event) {
         _activePointers.remove(event.pointer);
         _lastPointerPosition = null;
+        _stopInertia();
+        _velocityTracker = null;
 
         final scaleFactor = _devicePixelRatio;
         // Release button on cancel
@@ -312,12 +391,15 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
       },
       onPointerMove: (event) {
         if (_isPinchScaling || _activePointers.length > 1) {
+          _velocityTracker = null;
           return;
         }
 
         if (event.buttons == 0) {
           return;
         }
+
+        _velocityTracker?.addPosition(event.timeStamp, event.localPosition);
 
         // If an overlay has requested pan suppression,
         // still track the position so the next un-suppressed frame is correct,
@@ -514,6 +596,7 @@ class _GalileoMapWidgetState extends State<GalileoMapWidget>
       _focusNode.dispose();
     }
     panTicker.dispose();
+    _inertiaTicker.dispose();
   }
 }
 
@@ -524,6 +607,7 @@ class _GalileoMapFromConfig extends StatefulWidget {
   final Widget? child;
   final bool autoDispose;
   final bool enableKeyboard;
+  final bool enableInertia;
   final FocusNode? focusNode;
   final void Function(double x, double y)? onTap;
 
@@ -538,6 +622,7 @@ class _GalileoMapFromConfig extends StatefulWidget {
     this.child,
     this.autoDispose = true,
     this.enableKeyboard = true,
+    this.enableInertia = true,
     this.focusNode,
     this.onTap,
     this.onViewportChanged,
@@ -594,6 +679,7 @@ class _GalileoMapFromConfigState extends State<_GalileoMapFromConfig> {
           layers: widget.layers,
           autoDispose: widget.autoDispose,
           enableKeyboard: widget.enableKeyboard,
+          enableInertia: widget.enableInertia,
           focusNode: widget.focusNode,
           onTap: widget.onTap,
           child: widget.child,
