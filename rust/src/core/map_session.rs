@@ -57,7 +57,7 @@ pub struct MapSession {
     is_alive: AtomicBool,
     pub controller: galileo::control::MapController,
     // The map is initially built without layers, so the configured zoom level cannot be
-    // resolved from a tile schema at construction time.  
+    // resolved from a tile schema at construction time.
     zoom_level: u32,
     initial_view_resolved: AtomicBool,
     is_first_render: AtomicBool,
