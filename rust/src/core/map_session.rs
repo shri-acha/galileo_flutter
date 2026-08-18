@@ -7,7 +7,7 @@ use galileo::layer::{FeatureId, FeatureLayer};
 use galileo::{galileo_types, DummyMessenger, Messenger};
 use galileo_types::geo::impls::GeoPoint2d;
 use galileo_types::geometry_type::GeoSpace2d;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -56,6 +56,10 @@ pub struct MapSession {
     pub engine_handle: i64,
     is_alive: AtomicBool,
     pub controller: galileo::control::MapController,
+    // The map is initially built without layers, so the configured zoom level cannot be
+    // resolved from a tile schema at construction time.  
+    zoom_level: u32,
+    initial_view_resolved: AtomicBool,
     is_first_render: AtomicBool,
     requires_redraw: AtomicBool,
     redraw_scheduled: AtomicBool,
@@ -130,6 +134,8 @@ impl MapSession {
             engine_handle,
             is_alive: AtomicBool::new(true),
             controller: galileo::control::MapController::default(),
+            zoom_level: config.zoom_level,
+            initial_view_resolved: AtomicBool::new(false),
             is_first_render: AtomicBool::new(true),
             requires_redraw: AtomicBool::new(false),
             redraw_scheduled: AtomicBool::new(false),
@@ -175,6 +181,23 @@ impl MapSession {
         }
 
         let mut map = self.map.lock().await;
+
+        if !self.initial_view_resolved.load(Ordering::Relaxed) {
+            if let Some(schema) = layer.tile_schema() {
+                if let Some(resolution) = schema.lod_resolution(self.zoom_level) {
+                    let view = map.view().with_resolution(resolution);
+                    map.set_view(view);
+                    self.initial_view_resolved.store(true, Ordering::Relaxed);
+                } else {
+                    warn!(
+                        "Zoom level {} is not available in the added layer's tile schema; \
+                         leaving the initial map resolution unchanged",
+                        self.zoom_level
+                    );
+                }
+            }
+        }
+
         map.layers_mut().push(layer);
         map.redraw();
     }
