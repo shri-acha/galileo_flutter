@@ -22,7 +22,6 @@ pub fn create_galileo_map(
 pub fn create_galileo_map_v2(config: &MapInitConfig) -> anyhow::Result<Map> {
     let map = MapBuilder::default()
         .with_latlon(config.latlon.latitude, config.latlon.longitude)
-        .with_z_level(config.zoom_level)
         .build();
     Ok(map)
 }
