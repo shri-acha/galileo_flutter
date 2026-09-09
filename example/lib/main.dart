@@ -16,7 +16,7 @@ final _kMapConfig = MapInitConfig(
   enableMultisampling: true,
   latlon: GeoLocation(latitude: 0.0, longitude: 0.0),
   mapSize: _kMapSize,
-  zoomLevel: 10,
+  zoomLevel: 5,
 );
 
 enum DrawMode { point, polygon }
